@@ -26,3 +26,10 @@ Run executable with:
 
 *./Main* 
 
+## Instructions to run frontend
+Go to frontend/frontend-components folder
+
+run the following commands:
+npm install
+npm run dev
+
