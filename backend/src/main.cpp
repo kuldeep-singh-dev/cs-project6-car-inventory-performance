@@ -1,12 +1,15 @@
 #define CROW_MAIN
 #include "modules/sales/sales.h"
+#include "modules/inventory/inventory.h"
 
 int main() {
 	// Create the Crow application (HTTP server)
     crow::SimpleApp app;
 
+
 	// Register routes from the sales module
     registerSalesRoutes(app);
+    registerInventoryRoutes(app);
 
 	// Start the server on port 3000
     app.port(3000).multithreaded().run();

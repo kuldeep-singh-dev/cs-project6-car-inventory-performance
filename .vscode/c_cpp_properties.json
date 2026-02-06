@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "windows-gcc-x64",
+            "includePath": [
+                "${workspaceFolder}/backend/src",
+                "${workspaceFolder}/backend/src/external",
+                "${workspaceFolder}/backend/src/external/crow",
+                "${workspaceFolder}/backend/src/external/asio",
+                "${workspaceFolder}/**"
+            ],
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
+            "cStandard": "${default}",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerArgs": [
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
