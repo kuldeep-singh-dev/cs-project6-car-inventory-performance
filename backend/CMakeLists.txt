@@ -10,6 +10,8 @@ pkg_check_modules(PQXX REQUIRED libpqxx)
 add_library(MainLibrary
     src/modules/test_drive/test_drive.cpp
     src/modules/sales/sales.cpp
+    src/modules/inventory/inventory.cpp
+    # src/modules/customer/customer.cpp
     src/db/db_connection.cpp
 )
 
