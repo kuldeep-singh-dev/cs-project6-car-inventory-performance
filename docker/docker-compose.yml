@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: dealerdrive
       POSTGRES_PASSWORD: dealerdrive
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -22,8 +22,21 @@ services:
     depends_on:
       - db
     volumes:
-      - ../:/shareddocker
+      - ../backend:/shareddocker
     ports:
       - "3000:3000"
     stdin_open: true
     tty: true
+
+  frontend:
+    image: node:20-alpine
+    container_name: dealerdrive-frontend
+    working_dir: /app
+    volumes:
+      - ../frontend/frontend:/app
+      - /node_modules
+    ports:
+      - "5173:5173"  
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
