@@ -3,7 +3,7 @@ version: "3.9"
 services:
   db:
     image: postgres:15
-    container_name: dealerdive-db
+    container_name: dealerdrive-db
     environment:
       POSTGRES_DB: dealerdrive
       POSTGRES_USER: dealerdrive
@@ -18,7 +18,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: dealerdive-backend
+    container_name: dealerdrive-backend
     depends_on:
       - db
     volumes:
