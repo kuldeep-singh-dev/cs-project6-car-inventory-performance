@@ -103,14 +103,9 @@ WITH available_vehicles AS (
 random_customers AS (
     SELECT id FROM Customers ORDER BY random() LIMIT 120
 )
-INSERT INTO Test_Drive_Record (id, first_name, last_name, email, ph_number, vehicle_id, customer_id, date, comments)
+INSERT INTO Test_Drive_Record (id, vehicle_id, customer_id, date, comments)
 SELECT 
     gen_random_uuid(),
-    (SELECT first_name FROM Customers WHERE id = rc.id),
-    (SELECT last_name FROM Customers WHERE id = rc.id),
-    (SELECT email FROM Customers WHERE id = rc.id),
-    (SELECT ph_number FROM Customers WHERE id = rc.id),
-
     av.id,
     rc.id,
     CURRENT_DATE - (floor(random() * 365)::int),
