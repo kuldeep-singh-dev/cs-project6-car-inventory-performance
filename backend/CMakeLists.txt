@@ -9,6 +9,9 @@ pkg_check_modules(PQXX REQUIRED libpqxx)
 
 add_library(MainLibrary
     src/modules/test_drive/test_drive.cpp
+    src/modules/test_drive/test_drive_routes.cpp
+    src/modules/test_drive/test_drive_service.cpp
+    src/modules/test_drive/test_drive_controller.cpp
     src/modules/sales/sales.cpp
     src/db/db_connection.cpp
 )
@@ -27,3 +30,21 @@ target_link_libraries(MainLibrary
 add_executable(Main src/Main.cpp)
 
 target_link_libraries(Main PRIVATE MainLibrary)
+
+
+
+#for google test 
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+#enables the test to run 
+enable_testing()
+
+add_subdirectory(test)
