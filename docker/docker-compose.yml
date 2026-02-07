@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: dealerdrive-db
+    environment:
+      POSTGRES_DB: dealerdrive
+      POSTGRES_USER: dealerdrive
+      POSTGRES_PASSWORD: dealerdrive
+    volumes:
+      - ../backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: dealerdrive-backend
+    depends_on:
+      - db
+    volumes:
+      - ../backend:/shareddocker
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true
+
+  frontend:
+    image: node:20-alpine
+    container_name: dealerdrive-frontend
+    working_dir: /app
+    volumes:
+      - ../frontend/frontend:/app
+      - /node_modules
+    ports:
+      - "5173:5173"  
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend

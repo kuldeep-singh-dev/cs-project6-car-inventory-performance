@@ -13,6 +13,8 @@ add_library(MainLibrary
     src/modules/test_drive/test_drive_service.cpp
     src/modules/test_drive/test_drive_controller.cpp
     src/modules/sales/sales.cpp
+    src/modules/inventory/inventory.cpp
+    # src/modules/customer/customer.cpp
     src/db/db_connection.cpp
 )
 

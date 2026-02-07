@@ -46,7 +46,7 @@ CREATE TABLE Images (
 
 CREATE TABLE Sales (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    vehicle_id UUID NOT NULL REFERENCES Vehicles(id),
+    vehicle_id UUID NOT NULL REFERENCES Vehicles(id) UNIQUE,
     customer_id UUID NOT NULL REFERENCES Customers(id),
     date DATE NOT NULL,
     sale_price NUMERIC(10,2) NOT NULL
@@ -115,15 +115,28 @@ FROM generate_series(1,600) gs,
 -- =========================================================
 -- SEED SALES (150)
 -- =========================================================
+-- =========================================================
+-- SEED SALES (150) - ONE CUSTOMER = ONE VEHICLE
+-- =========================================================
+WITH sold_vehicles AS (
+    SELECT id, market_price, 
+           ROW_NUMBER() OVER (ORDER BY random()) as rn
+    FROM Vehicles 
+    WHERE status = 'Sold'
+),
+random_customers AS (
+    SELECT id, 
+           ROW_NUMBER() OVER (ORDER BY random()) as rn
+    FROM Customers
+)
 INSERT INTO Sales (vehicle_id, customer_id, date, sale_price)
 SELECT
-    v.id,
-    c.id,
+    sv.id,
+    rc.id,
     CURRENT_DATE - (random()*700)::int,
-    v.market_price * (0.9 + random()*0.15)
-FROM Vehicles v
-JOIN Customers c ON random() < 0.25
-WHERE v.status = 'Sold'
+    sv.market_price * (0.9 + random()*0.15)
+FROM sold_vehicles sv
+JOIN random_customers rc ON sv.rn = rc.rn
 LIMIT 150;
 
 -- =========================================================
