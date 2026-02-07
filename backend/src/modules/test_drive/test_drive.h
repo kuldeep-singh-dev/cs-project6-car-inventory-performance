@@ -1,30 +1,29 @@
 #pragma once
-
+#include <chrono>
+#include "string"
+#include <regex>
 #include <iostream>
 #include "../../external/crow/crow_all.h"
 using namespace std;
-using namespace crow;
-
 class TestDrive {
 	private:
-		int testId;
-		int customerId;
-		int vehicleId;
-		string comment = "";
+		string testDriveId;
+		string customerId;
+		string vehicleId;
+		string date;
+		string comment;
 	public:
-		TestDrive(int tId, int cId, int vId);
-		void setTestId(int tId);
-		int getTestId();
-		void setCustomerId(int cId);
-		int getCustomerId();
-		void setVehicleId(int vId);
-		int getVehicleId();
-		void setComment(string comm);
-		string getComment();
+		void setTestDriveId(string id);
+		string getTestDriveId()const;
+		void setCustomerId(string id);
+		string getCustomerId()const;
+		void setVehicleId(string id);
+		string getVehicleId()const;	
+		bool isDateValid(const string& date);
+		void setDate(std::string date);
+		string getDate()const;
+		void setComment(std::string comm);
+		string getComment()const;
+		crow::json::wvalue toJson() const;
 
-		//APi functions
-		void testDriveApiTest(response& res, string apiRoute);
-		void getTestDriveWithId(response& res, string apiRoute, int testID);
-		void getAllTestDrives(response& res, string apiRoute);
-		void createTestDrive(response& res, string apiRoute, int customerID, int vehicleID, string comment = " ");
 };

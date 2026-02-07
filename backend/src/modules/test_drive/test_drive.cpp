@@ -1,54 +1,66 @@
 #include "test_drive.h"
-#include <iostream>
 
-TestDrive::TestDrive(int tId, int cId, int vId) {
-	testId = tId;
-	customerId = cId;
-	vehicleId = vId;
+
+//getters and setters
+void TestDrive::setTestDriveId(string id) {
+	this->testDriveId = id;
 }
-void TestDrive::setTestId(int tId) {
-	testId = tId;
+string TestDrive::getTestDriveId() const{
+	return testDriveId;
 }
-int TestDrive::getTestId() {
-	return testId;
+void TestDrive::setCustomerId(string id) {
+	this->customerId = id;
 }
-void TestDrive::setCustomerId(int cId) {
-	customerId = cId;
-}
-int TestDrive::getCustomerId() {
+string TestDrive::getCustomerId() const{
 	return customerId;
 }
-void TestDrive::setVehicleId(int vId) {
-	vehicleId = vId;
+void TestDrive::setVehicleId(string id) {
+	this->vehicleId = id;
 }
-int TestDrive::getVehicleId() {
+string TestDrive::getVehicleId() const{
 	return vehicleId;
+}
+bool TestDrive::isDateValid(const string& date) {
+	//implement date validation logic here (YYYY-MM-DD)
+	static const std::regex pattern(R"(^\d{4}-\d{2}-\d{2}$)");
+	if (!std::regex_match(date, pattern))
+		return false;
+
+	int y, m, d;
+	if (sscanf(date.c_str(), "%d-%d-%d", &y, &m, &d) != 3)
+		return false;
+
+	if (m < 1 || m > 12)
+		return false;
+
+	if (d < 1 || d > 31)
+		return false;
+
+	return true;
+
+	return true;
+}
+void TestDrive::setDate(std::string date) {
+	//if time is not past today return error
+	
+	this->date = date;
+}
+std::string TestDrive::getDate()const {
+	return date;
 }
 void TestDrive::setComment(std::string comm) {
 	comment = comm;
 }
-std::string TestDrive::getComment() {
+
+std::string TestDrive::getComment()const {
 	return comment;
 }
-//API functions
-void TestDrive::testDriveApiTest(crow::response& res, string apiRoute) {
-	res.set_header("Content-Type", "text/css");
-	res.write("Test Drive API is working at " + apiRoute );
-	res.end();
+crow::json::wvalue TestDrive::toJson() const {
+	crow::json::wvalue json;
+	json["testDriveId"] = testDriveId;
+	json["customerId"] = customerId;
+	json["vehicleId"] = vehicleId;
+	json["date"] = date;
+	json["comment"] = comment;
+	return json;
 }
-void TestDrive::getTestDriveWithId(crow::response& res, std::string apiRoute, int testID) {
-	//Implementation for getting a test drive by ID
-	res.set_header("Content-Type", "application/json");
-	res.write("{ \"testId\": " + std::to_string(testID) + ", \"customerId\": 123, \"vehicleId\": 456, \"comment\": \"Test drive comment\" }");
-	res.end();
-}
-void TestDrive::getAllTestDrives(crow::response& res, std::string apiRoute) {
-	//Implementation for getting all test drives
-	res.set_header("Content-Type", "application/json");
-	res.write("[ { \"testId\": 1, \"customerId\": 123, \"vehicleId\": 456, \"comment\": \"First test drive\" }, { \"testId\": 2, \"customerId\": 789, \"vehicleId\": 101, \"comment\": \"Second test drive\" } ]");
-	res.end();
-}
-void TestDrive::createTestDrive(crow::response& res, std::string apiRoute, int customerID, int vehicleID, std::string comment) {
-	//Implementation for creating a new test drive
-}
-
