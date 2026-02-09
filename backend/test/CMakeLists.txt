@@ -1,1 +1,2 @@
 add_subdirectory(test_drive_tests)
+add_subdirectory(inventory_tests)
