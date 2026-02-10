@@ -63,6 +63,10 @@ CREATE TABLE Sales (
 -- 5. Test_Drive_Record Table
 CREATE TABLE Test_Drive_Record (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    ph_number VARCHAR(20),
     vehicle_id UUID NOT NULL REFERENCES Vehicles(id) ON DELETE CASCADE,
     customer_id UUID NOT NULL REFERENCES Customers(id) ON DELETE CASCADE,
     date DATE NOT NULL,

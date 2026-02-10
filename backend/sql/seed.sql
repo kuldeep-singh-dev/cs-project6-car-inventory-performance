@@ -96,6 +96,7 @@ WHERE sv.id = (SELECT id FROM sold_vehicles OFFSET (gs - 1) LIMIT 1)
   AND rc.id = (SELECT id FROM random_customers OFFSET (gs - 1) LIMIT 1);
 
 -- Insert 120 Test Drive Records with realistic data
+
 WITH available_vehicles AS (
     SELECT id FROM Vehicles WHERE status = 'Available' ORDER BY random() LIMIT 120
 ),
