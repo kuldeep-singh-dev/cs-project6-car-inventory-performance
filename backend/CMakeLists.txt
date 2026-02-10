@@ -36,16 +36,7 @@ add_executable(Main src/main.cpp)
 
 target_link_libraries(Main PRIVATE MainLibrary)
 
-# Customer tests
-add_executable(CustomerTests
-    test/customer_tests/customer_tests.cpp
-)
-target_link_libraries(CustomerTests PRIVATE MainLibrary)
-add_test(NAME CustomerModuleTests COMMAND CustomerTests)
-
-
-#for google test 
-
+# GoogleTest (shared by all module tests)
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -55,7 +46,38 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-#enables the test to run 
 enable_testing()
 
-add_subdirectory(test)
+# Tests for each module
+
+# Customer module tests
+add_executable(CustomerUnitTests
+    test/customer_tests/customer_tests.cpp
+)
+target_include_directories(CustomerUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(CustomerUnitTests PRIVATE gtest gtest_main MainLibrary)
+add_test(NAME CustomerUnitTests COMMAND CustomerUnitTests)
+
+# Inventory module tests
+add_executable(InventoryUnitTests
+    test/inventory_tests/InventoryTest.cpp
+)
+target_include_directories(InventoryUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(InventoryUnitTests PRIVATE gtest gtest_main MainLibrary)
+add_test(NAME InventoryUnitTests COMMAND InventoryUnitTests)
+
+# Sales module tests
+add_executable(SalesUnitTests
+    test/sales_tests/SalesTest.cpp
+)
+target_include_directories(SalesUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src ${PQXX_INCLUDE_DIRS})
+target_link_libraries(SalesUnitTests PRIVATE gtest gtest_main MainLibrary ${PQXX_LIBRARIES})
+add_test(NAME SalesUnitTests COMMAND SalesUnitTests)
+
+# Test-drive module tests
+add_executable(TestDriveUnitTests
+    test/test_drive_tests/TestDriveTest.cpp
+)
+target_include_directories(TestDriveUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(TestDriveUnitTests PRIVATE gtest gtest_main MainLibrary)
+add_test(NAME TestDriveUnitTests COMMAND TestDriveUnitTests)

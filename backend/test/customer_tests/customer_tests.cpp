@@ -1,69 +1,18 @@
+#include <gtest/gtest.h>
 
-#include "modules/customer/customer.h"
 #include "db/db_connection.h"
+#include "modules/customer/customer.h"
 
 #include <pqxx/pqxx>
 
 #include <chrono>
-#include <cstdlib>
-#include <iostream>
+#include <optional>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace
 {
-    int g_failed = 0;
-    int g_passed = 0;
-
-    void expect(bool condition, const std::string &message)
-    {
-        if (!condition)
-        {
-            ++g_failed;
-            std::cerr << "[FAIL] " << message << "\n";
-        }
-        else
-        {
-            ++g_passed;
-            std::cout << "[PASS] " << message << "\n";
-        }
-    }
-
-    template <typename Fn>
-    bool throwsInvalidArg(Fn &&fn)
-    {
-        try
-        {
-            fn();
-            return false;
-        }
-        catch (const std::invalid_argument &)
-        {
-            return true;
-        }
-        catch (...)
-        {
-            return false;
-        }
-    }
-
-    template <typename Fn>
-    bool throwsUniqueViolation(Fn &&fn)
-    {
-        try
-        {
-            fn();
-            return false;
-        }
-        catch (const pqxx::unique_violation &)
-        {
-            return true;
-        }
-        catch (...)
-        {
-            return false;
-        }
-    }
 
     std::string uniqueSuffix()
     {
@@ -80,178 +29,204 @@ namespace
         txn.commit();
     }
 
+    class CustomerDbFixture : public ::testing::Test
+    {
+    protected:
+        void SetUp() override
+        {
+            conn_ = getDbConnection();
+            suffix_ = uniqueSuffix();
+        }
+
+        void TearDown() override
+        {
+            if (!conn_)
+                return;
+            for (const auto &id : created_ids_)
+            {
+                try
+                {
+                    deleteCustomerById(*conn_, id);
+                }
+                catch (...)
+                {
+                    // Best-effort cleanup; avoid masking test failures.
+                }
+            }
+            created_ids_.clear();
+        }
+
+        pqxx::connection &conn() { return *conn_; }
+
+        Customer makeCustomer(const std::string &first = "TestFirst",
+                              const std::string &last = "TestLast",
+                              const std::string &phone = "5190000000",
+                              const std::optional<std::string> &address = std::optional<std::string>("123 Test St"))
+        {
+            Customer c = createCustomer(
+                conn(),
+                first,
+                last,
+                phone,
+                "test" + suffix_ + "@example.com",
+                "DL-" + suffix_,
+                address);
+            created_ids_.push_back(c.id);
+            return c;
+        }
+
+        std::shared_ptr<pqxx::connection> conn_;
+        std::string suffix_;
+        std::vector<std::string> created_ids_;
+    };
+
 }
 
-int main()
+// Tests that creating a customer with valid data succeeds and returns a customer with an ID 
+// and the expected email format.
+TEST_F(CustomerDbFixture, CreateCustomer_HappyPath)
 {
-    auto connPtr = getDbConnection();
-    pqxx::connection &conn = *connPtr;
+    Customer created = makeCustomer();
+    EXPECT_FALSE(created.id.empty());
+    EXPECT_NE(created.email.find('@'), std::string::npos);
+}
 
-    std::string suffix = uniqueSuffix();
+// Tests that getCustomerById returns the correct customer
+TEST_F(CustomerDbFixture, GetCustomerById_ReturnsCreatedCustomer)
+{
+    Customer created = makeCustomer();
+    auto fetched = getCustomerById(conn(), created.id);
+    ASSERT_TRUE(fetched.has_value());
+    EXPECT_EQ(fetched->email, created.email);
+    EXPECT_EQ(fetched->driving_licence, created.driving_licence);
+}
 
-    // Test: Create customer (happy path)
-    Customer created;
-    try
+// Tests that getAllCustomers includes a created customer
+TEST_F(CustomerDbFixture, GetAllCustomers_IncludesCreatedCustomer)
+{
+    Customer created = makeCustomer();
+    auto all = getAllCustomers(conn());
+    bool found = false;
+    for (const auto &c : all)
     {
-        created = createCustomer(
-            conn,
-            "TestFirst",
-            "TestLast",
-            "5190000000",
-            "test" + suffix + "@example.com",
-            "DL-" + suffix,
-            std::optional<std::string>("123 Test St"));
-        expect(!created.id.empty(), "POST/createCustomer returns customer with id");
-        expect(created.email.find("@") != std::string::npos, "Created customer has valid email");
-    }
-    catch (const std::exception &e)
-    {
-        expect(false, std::string("Create customer failed unexpectedly: ") + e.what());
-        return 1;
-    }
-
-    // Test: GET by id returns the same customer
-    {
-        auto fetched = getCustomerById(conn, created.id);
-        expect(fetched.has_value(), "GET/getCustomerById returns a value for existing id");
-        if (fetched)
+        if (c.id == created.id)
         {
-            expect(fetched->email == created.email, "Fetched customer matches created email");
-            expect(fetched->driving_licence == created.driving_licence, "Fetched customer matches driving_licence");
+            found = true;
+            break;
         }
     }
+    EXPECT_TRUE(found);
+}
 
-    // Test: GET all includes created customer
-    {
-        auto all = getAllCustomers(conn);
-        bool found = false;
-        for (const auto &c : all)
-        {
-            if (c.id == created.id)
-            {
-                found = true;
-                break;
-            }
-        }
-        expect(found, "GET/getAllCustomers includes newly created customer");
-    }
+// Tests that creating a customer with missing required fields throws an exception
+TEST_F(CustomerDbFixture, CreateCustomer_MissingRequiredFields_Throws)
+{
+    EXPECT_THROW(
+        (void)createCustomer(conn(), "", "Last", "123", "x" + suffix_ + "@example.com", "DL-X" + suffix_, std::nullopt),
+        std::invalid_argument);
+}
 
-    // Test: POST missing required fields
-    {
-        bool ok = throwsInvalidArg([&]()
-                                   { (void)createCustomer(conn, "", "Last", "123", "x" + suffix + "@example.com", "DL-X" + suffix, std::nullopt); });
-        expect(ok, "POST/createCustomer throws invalid_argument when required fields missing");
-    }
+// Tests invalid email format
+TEST_F(CustomerDbFixture, CreateCustomer_InvalidEmail_Throws)
+{
+    EXPECT_THROW(
+        (void)createCustomer(conn(), "A", "B", "123", "not-an-email", "DL-Y" + suffix_, std::nullopt),
+        std::invalid_argument);
+}
 
-    // Test: POST invalid email format
-    {
-        bool ok = throwsInvalidArg([&]()
-                                   { (void)createCustomer(conn, "A", "B", "123", "not-an-email", "DL-Y" + suffix, std::nullopt); });
-        expect(ok, "POST/createCustomer throws invalid_argument for invalid email format");
-    }
+// Tests uniqueness constraint on email
+TEST_F(CustomerDbFixture, CreateCustomer_DuplicateEmail_ThrowsUniqueViolation)
+{
+    Customer created = makeCustomer();
 
-    // Test: POST duplicates (email and driving_licence)
-    {
-        bool ok = throwsUniqueViolation([&]()
-                                        { (void)createCustomer(
-                                              conn,
-                                              "Dup",
-                                              "Email",
-                                              "123",
-                                              created.email,      // duplicate email
-                                              "DL-DUP-" + suffix, // unique DL
-                                              std::nullopt); });
-        expect(ok, "POST/createCustomer throws unique_violation for duplicate email");
-    }
+    EXPECT_THROW(
+        (void)createCustomer(conn(), "Dup", "Email", "123", created.email, "DL-DUP-" + suffix_, std::nullopt),
+        pqxx::unique_violation);
+}
 
-    {
-        bool ok = throwsUniqueViolation([&]()
-                                        { (void)createCustomer(
-                                              conn,
-                                              "Dup",
-                                              "DL",
-                                              "123",
-                                              "other" + suffix + "@example.com", // unique email
-                                              created.driving_licence,           // duplicate licence
-                                              std::nullopt); });
-        expect(ok, "POST/createCustomer throws unique_violation for duplicate driving_licence");
-    }
+// Tests uniqueness constraint on driving licence
+TEST_F(CustomerDbFixture, CreateCustomer_DuplicateDrivingLicence_ThrowsUniqueViolation)
+{
+    Customer created = makeCustomer();
 
-    // Test: PATCH update phone/address (happy path)
-    Customer updated;
-    try
-    {
-        updated = patchCustomer(
-            conn,
+    EXPECT_THROW(
+        (void)createCustomer(conn(), "Dup", "DL", "123", "other" + suffix_ + "@example.com", created.driving_licence, std::nullopt),
+        pqxx::unique_violation);
+}
+
+// Tests patching the phone number and address of an existing customer
+TEST_F(CustomerDbFixture, PatchCustomer_UpdatesPhoneAndAddress)
+{
+    Customer created = makeCustomer();
+
+    Customer updated = patchCustomer(
+        conn(),
+        created.id,
+        std::nullopt,
+        std::nullopt,
+        std::optional<std::string>("5191111111"),
+        std::nullopt,
+        std::nullopt,
+        std::optional<std::string>("999 Updated Ave"));
+
+    EXPECT_EQ(updated.ph_number, "5191111111");
+    EXPECT_EQ(updated.address, "999 Updated Ave");
+}
+
+// Tests patch with invalid email format
+TEST_F(CustomerDbFixture, PatchCustomer_InvalidEmail_Throws)
+{
+    Customer created = makeCustomer();
+
+    EXPECT_THROW(
+        (void)patchCustomer(
+            conn(),
             created.id,
             std::nullopt,
             std::nullopt,
-            std::optional<std::string>("5191111111"),
+            std::nullopt,
+            std::optional<std::string>("bademail"),
+            std::nullopt,
+            std::nullopt),
+        std::invalid_argument);
+}
+
+// Tests patch with no fields provided
+TEST_F(CustomerDbFixture, PatchCustomer_NoFieldsProvided_Throws)
+{
+    Customer created = makeCustomer();
+
+    EXPECT_THROW(
+        (void)patchCustomer(conn(), created.id, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt),
+        std::invalid_argument);
+}
+
+// Tests uniqueness constraint on email during patch
+TEST_F(CustomerDbFixture, PatchCustomer_UniquenessConflictOnEmail_ThrowsUniqueViolation)
+{
+    Customer c1 = makeCustomer();
+
+    // Creates a second customer with unique email and licence
+    std::string other_suffix = uniqueSuffix();
+    Customer c2 = createCustomer(
+        conn(),
+        "Other",
+        "Customer",
+        "5192222222",
+        "other" + other_suffix + "@example.com",
+        "DL-OTHER-" + other_suffix,
+        std::nullopt);
+    created_ids_.push_back(c2.id);
+
+    EXPECT_THROW(
+        (void)patchCustomer(
+            conn(),
+            c2.id,
             std::nullopt,
             std::nullopt,
-            std::optional<std::string>("999 Updated Ave"));
-        expect(updated.ph_number == "5191111111", "PATCH/patchCustomer updates ph_number");
-        expect(updated.address == "999 Updated Ave", "PATCH/patchCustomer updates address");
-    }
-    catch (const std::exception &e)
-    {
-        expect(false, std::string("PATCH update failed unexpectedly: ") + e.what());
-    }
-
-    // Test: PATCH invalid email format
-    {
-        bool ok = throwsInvalidArg([&]()
-                                   { (void)patchCustomer(
-                                         conn,
-                                         created.id,
-                                         std::nullopt,
-                                         std::nullopt,
-                                         std::nullopt,
-                                         std::optional<std::string>("bademail"),
-                                         std::nullopt,
-                                         std::nullopt); });
-        expect(ok, "PATCH/patchCustomer throws invalid_argument for invalid email");
-    }
-
-    // Test: PATCH no fields provided
-    {
-        bool ok = throwsInvalidArg([&]()
-                                   { (void)patchCustomer(conn, created.id, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt); });
-        expect(ok, "PATCH/patchCustomer throws invalid_argument when no fields provided");
-    }
-
-    // Test: PATCH uniqueness conflict (email)
-    std::string other_id;
-    {
-        // create another customer
-        Customer other = createCustomer(
-            conn,
-            "Other",
-            "Customer",
-            "5192222222",
-            "other" + suffix + "2@example.com",
-            "DL-OTHER-" + suffix,
-            std::nullopt);
-        other_id = other.id;
-
-        bool ok = throwsUniqueViolation([&]()
-                                        { (void)patchCustomer(
-                                              conn,
-                                              other_id,
-                                              std::nullopt,
-                                              std::nullopt,
-                                              std::nullopt,
-                                              std::optional<std::string>(updated.email), // set to existing email
-                                              std::nullopt,
-                                              std::nullopt); });
-        expect(ok, "PATCH/patchCustomer throws unique_violation when updating to existing email");
-    }
-
-    // Cleanup
-    deleteCustomerById(conn, created.id);
-    if (!other_id.empty())
-        deleteCustomerById(conn, other_id);
-
-    std::cout << "\nCustomer tests completed. Passed: " << g_passed << ", Failed: " << g_failed << "\n";
-    return g_failed == 0 ? 0 : 1;
+            std::nullopt,
+            std::optional<std::string>(c1.email),
+            std::nullopt,
+            std::nullopt),
+        pqxx::unique_violation);
 }
