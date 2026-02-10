@@ -3,9 +3,12 @@
 #include "modules/sales/sales.h"
 #include "modules/test_drive/test_drive_routes.h"
 #include "modules/inventory/inventory.h"
+#include "modules/customer/customer.h"
 
-int main() {
-	// Create the Crow application (HTTP server)
+    int
+    main()
+{
+    // Create the Crow application (HTTP server)
     crow::SimpleApp app;
 
 
@@ -15,7 +18,10 @@ int main() {
     // Register routes from the inventory module
     registerInventoryRoutes(app);
 
-	// Register routes from the test drive module
+    // Register routes from the customer module
+    registerCustomerRoutes(app);
+	
+   // Register routes from the test drive module
 	registerTestDriveRoutes(app);
 
 	// Start the server on port 3000
