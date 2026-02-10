@@ -11,6 +11,8 @@ int main() {
 
 	// Register routes from the sales module
     registerSalesRoutes(app);
+
+    // Register routes from the inventory module
     registerInventoryRoutes(app);
 
 	// Register routes from the test drive module

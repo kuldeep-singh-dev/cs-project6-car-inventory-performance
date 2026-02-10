@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: dealerdrive
       POSTGRES_PASSWORD: dealerdrive
     volumes:
-      - ../backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     restart: unless-stopped
