@@ -104,7 +104,7 @@ random_customers AS (
 )
 INSERT INTO Test_Drive_Record (id, vehicle_id, customer_id, date, comments)
 SELECT 
-    gen_random_uuid(),
+    uuid_generate_v4(),
     av.id,
     rc.id,
     CURRENT_DATE - (floor(random() * 365)::int),

@@ -11,21 +11,32 @@ add_library(MainLibrary
     src/modules/test_drive/test_drive.cpp
     src/modules/sales/sales.cpp
     src/modules/inventory/inventory.cpp
-    # src/modules/customer/customer.cpp
+    src/modules/customer/customer.cpp
     src/db/db_connection.cpp
 )
 
 target_include_directories(MainLibrary
-    PRIVATE
+    PUBLIC
         ${PQXX_INCLUDE_DIRS}
         ${CMAKE_SOURCE_DIR}/src
 )
+
+target_link_directories(MainLibrary PRIVATE ${PQXX_LIBRARY_DIRS})
 
 target_link_libraries(MainLibrary
     PRIVATE
         ${PQXX_LIBRARIES}
 )
 
-add_executable(Main src/Main.cpp)
+add_executable(Main src/main.cpp)
 
 target_link_libraries(Main PRIVATE MainLibrary)
+
+enable_testing()
+
+# Customer tests
+add_executable(CustomerTests
+    test/customer_tests/customer_tests.cpp
+)
+target_link_libraries(CustomerTests PRIVATE MainLibrary)
+add_test(NAME CustomerModuleTests COMMAND CustomerTests)
