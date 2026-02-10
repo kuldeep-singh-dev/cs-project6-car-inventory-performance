@@ -5,16 +5,18 @@ import VehiclesPage from "../pages/Vehicle/VehiclesPage";
 import AddVehiclePage from "../pages/Vehicle/AddVehiclePage";
 import ViewVehicle from "../pages/Vehicle/ViewVehicle";
 import EditVehiclePage from "../pages/Vehicle/EditVehiclePage";
+import DashboardPage from "../pages/DashboardPage";
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
         {/* Default route goes to Vehicles */}
-        <Route path="/" element={<Navigate to="/vehicles" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Layout wrapper */}
         <Route element={<MainLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/addvehicle" element={<AddVehiclePage />} />
           <Route path="/vehicles/:id" element={<ViewVehicle />} />

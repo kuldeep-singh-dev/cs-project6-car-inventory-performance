@@ -1,4 +1,4 @@
-// import { api } from "./api";
+// import api from "../services/api";
 // import type { Customer, CustomerCreate, CustomerUpdate } from "../types/customer";
 
 // export function getCustomers(): Promise<Customer[]> {
@@ -6,19 +6,17 @@
 // }
 
 // export function getCustomerById(id: string): Promise<Customer> {
-//   return apiRequest<Customer>(`/customers/${encodeURIComponent(id)}`, { method: "GET" });
+//   return api.get<Customer>(`/customers/${encodeURIComponent(id)}`);
 // }
 
 // export function createCustomer(payload: CustomerCreate): Promise<Customer> {
-//   return apiRequest<Customer>("/customers", {
-//     method: "POST",
+//   return api.post<Customer>("/customers", {
 //     body: JSON.stringify(payload),
 //   });
 // }
-
+    
 // export function patchCustomer(id: string, payload: CustomerUpdate): Promise<Customer> {
-//   return apiRequest<Customer>(`/customers/${encodeURIComponent(id)}`, {
-//     method: "PATCH",
+//   return api.patch<Customer>(`/customers/${encodeURIComponent(id)}`, {
 //     body: JSON.stringify(payload),
 //   });
 // }
