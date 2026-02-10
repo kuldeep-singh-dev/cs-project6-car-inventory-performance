@@ -10,6 +10,14 @@
 namespace
 {
 
+    void addCorsHeaders(crow::response &res)
+    {
+        // Adds CORS headers to the response to allow cross-origin requests from the frontend
+        res.add_header("Access-Control-Allow-Origin", "*");
+        res.add_header("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+        res.add_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    }
+
     bool isLikelyUuid(const std::string &s)
     {
         // Check for customer id format
@@ -64,7 +72,15 @@ namespace
         // Helper to return a JSON error response with a consistent structure
         crow::json::wvalue err;
         err["error"] = message;
-        return crow::response(code, err);
+        crow::response res(code, err);
+        addCorsHeaders(res);
+        return res;
+    }
+
+    crow::response withCors(crow::response res)
+    {
+        addCorsHeaders(res);
+        return res;
     }
 
 }
@@ -212,6 +228,24 @@ static std::string getStringOrEmpty(const crow::json::rvalue &body, const char *
 void registerCustomerRoutes(crow::SimpleApp &app)
 {
 
+    // OPTIONS /customers (CORS preflight)
+    CROW_ROUTE(app, "/customers")
+        .methods("OPTIONS"_method)([]()
+                                   {
+            crow::response res;
+            res.code = 204;
+            addCorsHeaders(res);
+            return res; });
+
+    // OPTIONS /customers/{id} (CORS preflight)
+    CROW_ROUTE(app, "/customers/<string>")
+        .methods("OPTIONS"_method)([](const std::string &)
+                                   {
+            crow::response res;
+            res.code = 204;
+            addCorsHeaders(res);
+            return res; });
+
     // GET /customers
     CROW_ROUTE(app, "/customers")
         .methods("GET"_method)([]()
@@ -224,7 +258,9 @@ void registerCustomerRoutes(crow::SimpleApp &app)
             for (const auto& c : customers) {
                 result[i++] = customerToJson(c);
             }
-            return crow::response(200, result);
+            crow::response res(200, result);
+            addCorsHeaders(res);
+            return res;
         } catch (const std::exception& e) {
             return jsonError(500, e.what());
         } });
@@ -242,7 +278,9 @@ void registerCustomerRoutes(crow::SimpleApp &app)
             if (!c) {
                 return jsonError(404, "Customer not found");
             }
-            return crow::response(200, customerToJson(*c));
+            crow::response res(200, customerToJson(*c));
+            addCorsHeaders(res);
+            return res;
         } catch (const std::exception& e) {
             return jsonError(500, e.what());
         } });
@@ -274,7 +312,9 @@ void registerCustomerRoutes(crow::SimpleApp &app)
                 driving_licence,
                 address.empty() ? std::nullopt : std::optional<std::string>(address)
             );
-            return crow::response(201, customerToJson(created));
+            crow::response res(201, customerToJson(created));
+            addCorsHeaders(res);
+            return res;
         } catch (const pqxx::unique_violation&) {
             return jsonError(409, "Customer with the same email or driving_licence already exists");
         } catch (const std::invalid_argument& e) {
@@ -316,7 +356,9 @@ void registerCustomerRoutes(crow::SimpleApp &app)
                 driving_licence,
                 address
             );
-            return crow::response(200, customerToJson(updated));
+            crow::response res(200, customerToJson(updated));
+            addCorsHeaders(res);
+            return res;
         } catch (const pqxx::unique_violation&) {
             return jsonError(409, "Update violates uniqueness constraint (email or driving_licence already exists)");
         } catch (const std::invalid_argument& e) {
