@@ -32,7 +32,7 @@ target_link_libraries(MainLibrary
         ${PQXX_LIBRARIES}
 )
 
-add_executable(Main src/main.cpp)
+add_executable(Main ../src/main.cpp)
 
 target_link_libraries(Main PRIVATE MainLibrary)
 
