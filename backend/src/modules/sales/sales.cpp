@@ -336,7 +336,7 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             auto row = r[0];
 
             // ========================================
-            // BUILD STRINGS FIRST (Important!)
+            // BUILDING STRINGS FIRST 
             // ========================================
             
             std::string customer_name = std::string(row["first_name"].c_str()) + " " + 
@@ -527,6 +527,11 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             if (sale_price <= 0) {
                 crow::json::wvalue error;
                 error["error"] = "Sale price must be positive";
+                return crow::response(400, error);
+            }
+            if (sale_price > 1000000) {
+                crow::json::wvalue error;
+                error["error"] = "Sale price is too high";
                 return crow::response(400, error);
             }
 
