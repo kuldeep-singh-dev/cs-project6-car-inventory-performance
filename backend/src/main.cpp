@@ -8,7 +8,6 @@ int main() {
 	// Create the Crow application (HTTP server)
     crow::SimpleApp app;
 
-
 	// Register routes from the sales module
     registerSalesRoutes(app);
     registerInventoryRoutes(app);

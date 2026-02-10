@@ -1,0 +1,56 @@
+.vehicleView {
+  display: flex;
+  gap: 20px;
+}
+
+.vehicleLeft {
+  width: 600px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.vehicleHeading {
+  margin: 0 0 12px 0;
+}
+
+.vehicleMainImage {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicleThumbRow {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.thumb {
+  width: 150px;
+  height: 50px;
+  border: 1px solid #ddd;
+}
+
+.vehicleRight {
+  width: 600px;
+  margin-top: 20px;
+  box-sizing: border-box;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.infoBox {
+  width: 400px;
+  height: 50px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  box-sizing: border-box;
+}

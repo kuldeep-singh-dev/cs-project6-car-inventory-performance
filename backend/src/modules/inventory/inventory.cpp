@@ -14,28 +14,34 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
             auto conn = getDbConnection();      
             pqxx::work txn(*conn);              
 
-            pqxx::result res = txn.exec("SELECT * FROM Vehicles");
+                    pqxx::result res = txn.exec("SELECT * FROM Vehicles");
+                crow::json::wvalue result;
+                result = crow::json::wvalue::list();
 
-            crow::json::wvalue result;
-            int index = 0;
-            for (auto row : res) {
-                crow::json::wvalue vehicle;
-                vehicle["id"] = row["id"].c_str();
-                vehicle["vin"] = row["vin"].c_str();
-                vehicle["make"] = row["make"].c_str();
-                vehicle["model"] = row["model"].c_str();
-                vehicle["year"] = row["year"].as<int>();
-                vehicle["odometer"] = row["odometer"].as<int>();
-                vehicle["fuel_type"] = row["fuel_type"].c_str();
-                vehicle["transmission"] = row["transmission"].c_str();
-                vehicle["trim"] = row["trim"].c_str();
-                vehicle["market_price"] = row["market_price"].as<double>();
-                vehicle["status"] = row["status"].c_str();
+                size_t i = 0;
+                for (auto row : res) {
+                    crow::json::wvalue vehicle;
+                    vehicle["id"] = row["id"].c_str();
+                    vehicle["vin"] = row["vin"].c_str();
+                    vehicle["make"] = row["make"].c_str();
+                    vehicle["model"] = row["model"].c_str();
+                    vehicle["year"] = row["year"].as<int>();
+                    vehicle["odometer"] = row["odometer"].as<int>();
+                    vehicle["fuel_type"] = row["fuel_type"].c_str();
+                    vehicle["transmission"] = row["transmission"].c_str();
 
-                result[index++] = std::move(vehicle);   // move, not copy
-            }
+                    if (row["trim"].is_null()) vehicle["trim"] = nullptr;
+                    else vehicle["trim"] = row["trim"].c_str();
 
-            return crow::response{result};
+                    vehicle["market_price"] = row["market_price"].as<double>();
+                    vehicle["status"] = row["status"].c_str();
+
+                    result[i++] = std::move(vehicle);   //list indexing works
+                }
+
+                return crow::response{result};
+
+
         } catch (const std::exception& e) {
             return crow::response(500, std::string("Database error: ") + e.what());
         }

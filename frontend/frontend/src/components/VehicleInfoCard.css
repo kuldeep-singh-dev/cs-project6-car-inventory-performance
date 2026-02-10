@@ -1,0 +1,21 @@
+.vehicleCard {
+  width: 300px;
+  cursor: pointer;
+}
+
+.vehicleCardImage {
+  width: 300px;
+  height: 200px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vehicleCardContent {
+  padding: 8px;
+}
+
+.vehicleTitle {
+  margin: 0 0 6px 0;
+}
