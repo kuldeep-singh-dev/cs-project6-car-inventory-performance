@@ -1,0 +1,32 @@
+.topHeader {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 18px;
+  box-sizing: border-box;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.topHeaderBrand {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.topHeaderNav {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+
+.navLink {
+  text-decoration: none;
+  opacity: 0.9;
+}
+
+.navLink.active {
+  font-weight: 700;
+  opacity: 1;
+}

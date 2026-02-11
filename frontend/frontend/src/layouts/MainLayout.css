@@ -1,0 +1,13 @@
+.appShell {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* important so only inner areas scroll */
+}
+
+.appMain {
+  flex: 1;
+  min-height: 0;   /* critical for nested scrolling */
+  overflow: hidden;
+}
