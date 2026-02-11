@@ -6,6 +6,8 @@ import AddVehiclePage from "../pages/Vehicle/AddVehiclePage";
 import ViewVehicle from "../pages/Vehicle/ViewVehicle";
 import EditVehiclePage from "../pages/Vehicle/EditVehiclePage";
 import DashboardPage from "../pages/DashboardPage";
+import SalesPage from "../pages/Sales/SalesPage";
+import AddSalePage from "../pages/Sales/AddSalesPage";
 
 const AppRoutes = () => {
   return (
@@ -21,6 +23,8 @@ const AppRoutes = () => {
           <Route path="/addvehicle" element={<AddVehiclePage />} />
           <Route path="/vehicles/:id" element={<ViewVehicle />} />
           <Route path="/vehicles/edit/:id" element={<EditVehiclePage />} />
+          <Route path="/sales" element={<SalesPage />} />
+          <Route path="/sales/add" element={<AddSalePage />} />
         </Route>
 
         {/* Fallback */}

@@ -1,39 +1,33 @@
-import {Link} from "react-router-dom";
-const Header=()=>{
-    return(
-        <div
-      style={{
-        width: "100%",
-        height: "60px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 15px",
-        boxSizing: "border-box",
-        borderBottom: "1px solid #ccc",
-        flexWrap: "nowrap",
-      }}
-    >
-      
-      <div style={{ display: "flex", alignItems: "center", whiteSpace: "nowrap" }}>
-        <Link to="/dashboard">Home</Link>
+import { Link, NavLink } from "react-router-dom";
+import "./Header.css";
+
+const Header = () => {
+  return (
+    <header className="topHeader">
+      <div className="topHeaderLeft">
+        <Link to="/dashboard" className="topHeaderBrand">
+          Home
+        </Link>
       </div>
 
-   
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "20px",
-          whiteSpace: "nowrap",
-        }}
-      >
-        <Link to="/vehicles">Vehicle</Link>
-        <Link to="/customers">Customers</Link>
-        <Link to="/settings">Settings</Link>
-      </div>
-    </div>
-    );
+      <nav className="topHeaderNav">
+        <NavLink to="/vehicles" className={({ isActive }) => (isActive ? "navLink active" : "navLink")}>
+          Vehicles
+        </NavLink>
+        <NavLink to="/customers" className={({ isActive }) => (isActive ? "navLink active" : "navLink")}>
+          Customers
+        </NavLink>
+        <NavLink
+          to="/sales"
+          className={({ isActive }) =>
+            isActive ? "navLink active" : "navLink"
+          }
+        >
+          Sales
+        </NavLink>
+      </nav>
+    </header>
+  );
 };
 
 export default Header;

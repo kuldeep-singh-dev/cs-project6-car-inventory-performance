@@ -1,21 +1,40 @@
 .vehicleCard {
-  width: 300px;
+  width: 100%;
+  max-width: 320px;
   cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+
+  overflow: hidden;
+
+  /* simple “dashboard” look */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+  box-sizing: border-box;
 }
 
 .vehicleCardImage {
-  width: 300px;
-  height: 200px;
-  border: 1px solid #ddd;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .vehicleCardContent {
-  padding: 8px;
+  padding: 12px 12px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .vehicleTitle {
-  margin: 0 0 6px 0;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
 }
