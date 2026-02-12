@@ -16,6 +16,13 @@ void registerTestDriveRoutes(crow::SimpleApp& app) {
 		([](crow::response& res) {
 		testDriveController.listTestDrives(res);
 			});
+	//testdrive by id 
+	CROW_ROUTE(app, "/testdrive/<string>").methods(crow::HTTPMethod::GET)
+		([](const crow::request& req,crow::response& res, string testDriveId) {
+		testDriveController.getTestDriveById(res, testDriveId);
+			
+			});
+
 	//create test drive OR schedule test drive
 	CROW_ROUTE(app, "/testdrive/post").methods(crow::HTTPMethod::POST)
 		([](const crow::request& req, crow::response& res) {

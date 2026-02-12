@@ -1,0 +1,50 @@
+.editTDPage {
+  padding: 32px;
+  text-align: left;
+}
+
+.editTDTitle {
+  margin-bottom: 24px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.editTDForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.editTDLabel {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.editTDInput,
+.editTDTextarea {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.editTDTextarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.editTDSaveBtn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid #1976d2;
+  background: #2196f3;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 8px;
+}
+
+.editTDSaveBtn:hover {
+  background: #1976d2;
+}
