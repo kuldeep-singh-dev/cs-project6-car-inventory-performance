@@ -1,0 +1,60 @@
+.tdPage {
+  padding: 32px;
+  text-align: left;
+}
+.tdHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tdHeaderActions {
+  display: flex;
+  gap: 12px;
+}
+
+.tdBtnSmall {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+.tdTitle {
+  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.tdActions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tdBtn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+}
+
+.tdBtnPrimary {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #1976d2;
+  background: #2196f3;
+  color: white;
+  cursor: pointer;
+}
+
+.tdTableWrap {
+  width: 100%;
+  max-height: 70vh;     /* or any height you prefer */
+  overflow-y: auto;     /* <-- enables vertical scrolling */
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+}

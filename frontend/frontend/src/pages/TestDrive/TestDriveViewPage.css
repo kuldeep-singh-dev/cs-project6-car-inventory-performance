@@ -1,0 +1,53 @@
+.tdViewPage {
+  padding: 32px;
+  text-align: left;
+}
+
+.tdViewTitle {
+  margin-bottom: 24px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.tdViewLayout {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+.tdViewDetails {
+  flex: 1;
+}
+
+.tdViewButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 150px;
+}
+
+.tdViewBtnAdd,
+.tdViewBtnEdit {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.tdViewBtnAdd {
+  background: #e8f5e9;
+}
+
+.tdViewBtnEdit {
+  background: #e3f2fd;
+}
+
+.tdViewBtnAdd:hover {
+  background: #d6f0d8;
+}
+
+.tdViewBtnEdit:hover {
+  background: #d4e9fb;
+}

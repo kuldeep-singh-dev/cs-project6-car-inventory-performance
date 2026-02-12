@@ -25,6 +25,9 @@ const Header = () => {
         >
           Sales
         </NavLink>
+        <NavLink to="/testdrive" className={({ isActive }) => (isActive ? "navLink active" : "navLink")}>
+          Test Drive
+        </NavLink>
       </nav>
     </header>
   );

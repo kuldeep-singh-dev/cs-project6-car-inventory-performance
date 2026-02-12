@@ -3,10 +3,10 @@
 TestDriveService::TestDriveService(shared_ptr<pqxx::connection> connection) : conn(connection) {}
 crow::json::wvalue TestDriveService::getAllTestDrives() {
 	vector<TestDrive> testDrives;
-	
+
 	pqxx::work txn(*conn);
 	pqxx::result r = txn.exec//get first name last name from customer and make model from vehicle
-	("SELECT c.first_name, last_name, v.make, v.model, t.date "
+	("SELECT t.id, c.first_name, c.last_name, v.make, v.model, t.date, t.comments "
 		"FROM test_drive_record t "
 		"JOIN customers c ON t.customer_id = c.id "
 		"JOIN vehicles v ON t.vehicle_id = v.id"
@@ -14,11 +14,13 @@ crow::json::wvalue TestDriveService::getAllTestDrives() {
 	crow::json::wvalue testDriveJson = crow::json::wvalue::list();
 	int i = 0;
 	for (const auto& row : r) {
+		testDriveJson[i]["id"] = row["id"].c_str();
 		testDriveJson[i]["firstName"] = row["first_name"].c_str();
 		testDriveJson[i]["lastName"] = row["last_name"].c_str();
 		testDriveJson[i]["make"] = row["make"].c_str();
 		testDriveJson[i]["model"] = row["model"].c_str();
 		testDriveJson[i]["date"] = row["date"].c_str();
+		testDriveJson[i]["comment"] = row["comments"].c_str();
 		i++;
 	}
 	return testDriveJson;
@@ -84,6 +86,7 @@ crow::json::wvalue TestDriveService::updateTestDrive(const TestDrive& testDrive)
 	result["customerId"] = r[0]["customer_id"].c_str();
 	result["vehicleId"] = r[0]["vehicle_id"].c_str();
 	result["date"] = r[0]["date"].c_str();
+	result["comment"] = r[0]["comments"].c_str();
 	return result;
 }
 
@@ -112,9 +115,9 @@ string TestDriveService::getVehicleStatusFromDataBase(const string vehicleId) {
 crow::json::wvalue TestDriveService::getTestDriveByCustomerId(const string customerId) {
 	pqxx::work txn(*conn);
 	pqxx::result r = txn.exec_params(
-		"SELECT c.first_name, last_name, v.make, v.model, t.date "
+		"SELECT t.id, c.first_name, c.last_name, v.make, v.model, t.date, t.comments "
 		"FROM test_drive_record t "
-	    "JOIN customers c ON t.customer_id = c.id "
+		"JOIN customers c ON t.customer_id = c.id "
 		"JOIN vehicles v ON t.vehicle_id = v.id WHERE customer_id = $1",
 		customerId
 	);
@@ -125,11 +128,13 @@ crow::json::wvalue TestDriveService::getTestDriveByCustomerId(const string custo
 	}
 	int i = 0;
 	for (const auto& row : r) {
+		result[i]["id"] = row["id"].c_str();
 		result[i]["firstName"] = row["first_name"].c_str();
 		result[i]["lastName"] = row["last_name"].c_str();
 		result[i]["make"] = row["make"].c_str();
 		result[i]["model"] = row["model"].c_str();
 		result[i]["date"] = row["date"].c_str();
+		result[i]["comment"] = row["comments"].c_str();
 		i++;
 	}
 
@@ -138,7 +143,7 @@ crow::json::wvalue TestDriveService::getTestDriveByCustomerId(const string custo
 crow::json::wvalue TestDriveService::getTestDriveByVehicleId(const string vehicleId) {
 	pqxx::work txn(*conn);
 	pqxx::result r = txn.exec_params(
-		"SELECT c.first_name, last_name, v.make, v.model, t.date "
+		"SELECT t.id, c.first_name, last_name, v.make, v.model, t.date, t.comments "
 		"FROM test_drive_record t "
 		"JOIN customers c ON t.customer_id = c.id "
 		"JOIN vehicles v ON t.vehicle_id = v.id WHERE vehicle_id = $1",
@@ -150,13 +155,48 @@ crow::json::wvalue TestDriveService::getTestDriveByVehicleId(const string vehicl
 	}
 	int i = 0;
 	for (const auto& row : r) {
+		result[i]["id"] = row["id"].c_str();
 		result[i]["firstName"] = row["first_name"].c_str();
 		result[i]["lastName"] = row["last_name"].c_str();
 		result[i]["make"] = row["make"].c_str();
 		result[i]["model"] = row["model"].c_str();
 		result[i]["date"] = row["date"].c_str();
+		result[i]["comment"] = row["comments"].c_str();
 		i++;
 	}
 	return result;
 }
 
+crow::json::wvalue TestDriveService::getTestDriveByTestId(string testId) {
+	pqxx::work txn(*conn);
+	pqxx::result r = txn.exec_params(
+		"SELECT t.id, c.first_name, c.last_name, v.make, v.model, t.date, t.comments "
+		"FROM test_drive_record t "
+		"JOIN customers c ON t.customer_id = c.id "
+		"JOIN vehicles v ON t.vehicle_id = v.id WHERE t.id = $1",
+		testId
+	);
+	crow::json::wvalue result;
+	if (r.empty()) {
+		return result;
+	}
+	/*int i = 0;
+	for (const auto& row : r) {
+		result[i]["id"] = row["id"].c_str();
+		result[i]["firstName"] = row["first_name"].c_str();
+		result[i]["lastName"] = row["last_name"].c_str();
+		result[i]["make"] = row["make"].c_str();
+		result[i]["model"] = row["model"].c_str();
+		result[i]["date"] = row["date"].c_str();
+		result[i]["comment"] = row["comments"].c_str();
+		i++;
+	}*/
+	result["id"] = r[0]["id"].c_str();
+	result["firstName"] = r[0]["first_name"].c_str();
+	result["lastName"] = r[0]["last_name"].c_str();
+	result["make"] = r[0]["make"].c_str();
+	result["model"] = r[0]["model"].c_str();
+	result["date"] = r[0]["date"].c_str();
+	result["comment"] = r[0]["comments"].c_str();
+	return result;
+}

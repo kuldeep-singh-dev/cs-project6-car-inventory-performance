@@ -10,7 +10,7 @@ const Sidebar=()=>{
                     <li><Link to="/vehicles">Vehicles</Link></li>
                     <li><Link to="/customers">Customers</Link></li>
                     <li><Link to="/sales">Sales</Link></li>
-                    <li><Link to="/records">Records</Link></li>
+                    <li><Link to="/testdrive">Test Drive</Link></li>
                     <li><Link to="/documents">Documents</Link></li>
                     <li><Link to="/settings">Settings</Link></li>
                     
