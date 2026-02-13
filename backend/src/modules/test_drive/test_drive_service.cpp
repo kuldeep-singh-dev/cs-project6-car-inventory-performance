@@ -38,14 +38,15 @@ crow::json::wvalue TestDriveService::addTestDrive(const TestDrive& testDrive) {
 	);
 	txn.commit();
 	crow::json::wvalue result;
-	if (r.size() > 0) {
+	/*if (r.size() > 0) {
 		result["testDriveId"] = r[0]["id"].c_str();
 		result["customerId"] = r[0]["customer_id"].c_str();
 		result["vehicleId"] = r[0]["vehicle_id"].c_str();
 		result["date"] = r[0]["date"].c_str();
 		result["comment"] = testDrive.getComment();
-	}
-	return result;
+	}*/
+
+	return getTestDriveByTestId(r[0]["id"].c_str());
 }
 crow::json::wvalue TestDriveService::updateTestDrive(const TestDrive& testDrive) {
 	pqxx::work txn(*conn);
@@ -143,7 +144,7 @@ crow::json::wvalue TestDriveService::getTestDriveByCustomerId(const string custo
 crow::json::wvalue TestDriveService::getTestDriveByVehicleId(const string vehicleId) {
 	pqxx::work txn(*conn);
 	pqxx::result r = txn.exec_params(
-		"SELECT t.id, c.first_name, last_name, v.make, v.model, t.date, t.comments "
+		"SELECT t.id, c.first_name, c.last_name, v.make, v.model, t.date, t.comments "
 		"FROM test_drive_record t "
 		"JOIN customers c ON t.customer_id = c.id "
 		"JOIN vehicles v ON t.vehicle_id = v.id WHERE vehicle_id = $1",

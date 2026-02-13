@@ -1,0 +1,22 @@
+.tdSelectPage {
+  padding: 32px;
+}
+
+.tdSelectTitle {
+  margin-bottom: 24px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.tdBtnPrimary {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #1976d2;
+  background: #2196f3;
+  color: white;
+  cursor: pointer;
+}
+
+.tdBtnPrimary:hover {
+  background: #1976d2;
+}
