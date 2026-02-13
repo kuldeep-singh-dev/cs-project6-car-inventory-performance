@@ -6,12 +6,27 @@ import { vehicleService } from "../../services/vehicleService";
 import type { Vehicle } from "../../types/vehicle";
 import { customerService } from "../../services/customerService";
 
-
-/** Minimal customer shape (adjust to your real Customer type if you already have it) */
+/** Minimal customer shape */
 type CustomerLite = {
   id: string;
   first_name: string;
   last_name: string;
+};
+
+const toErrorMessage = (e: any) => {
+  const data = e?.response?.data;
+
+ 
+  if (data && typeof data === "object" && "error" in data) {
+    return String((data as any).error);
+  }
+
+  // backend sometimes returns a plain string
+  if (typeof data === "string") return data;
+
+  if (e?.message) return String(e.message);
+
+  return "Something went wrong";
 };
 
 const AddSalePage = () => {
@@ -41,12 +56,10 @@ const AddSalePage = () => {
       const v = await vehicleService.getAll();
       setVehicles(Array.isArray(v) ? v : []);
 
-
-    const c = await customerService.getAll();
-     setCustomers(Array.isArray(c) ? c : []);
-
+      const c = await customerService.getAll();
+      setCustomers(Array.isArray(c) ? (c as any) : []);
     } catch (e: any) {
-      setError(e?.response?.data || "Failed to load form data");
+      setError(toErrorMessage(e));
     } finally {
       setLoading(false);
     }
@@ -79,12 +92,10 @@ const AddSalePage = () => {
         sale_price: price,
       });
 
-      // Later: navigate to invoice page and generate PDF
-      // For now: go back to list
       navigate("/sales");
       console.log("Created sale:", created);
     } catch (e: any) {
-      setError(e?.response?.data?.error || e?.response?.data || "Failed to create sale");
+      setError(toErrorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -101,10 +112,7 @@ const AddSalePage = () => {
       <div className="addSaleGrid">
         <div className="addSaleField">
           <label>Select Customer</label>
-          <select
-            value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
-          >
+          <select value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
             <option value="">Choose...</option>
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
@@ -112,19 +120,15 @@ const AddSalePage = () => {
               </option>
             ))}
           </select>
+
           {customers.length === 0 && (
-            <small className="hint">
-              Customers not loaded yet (add your customerService, then we’ll connect it).
-            </small>
+            <small className="hint">No customers loaded yet.</small>
           )}
         </div>
 
         <div className="addSaleField">
           <label>Select Vehicle</label>
-          <select
-            value={vehicleId}
-            onChange={(e) => setVehicleId(e.target.value)}
-          >
+          <select value={vehicleId} onChange={(e) => setVehicleId(e.target.value)}>
             <option value="">Choose...</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>
