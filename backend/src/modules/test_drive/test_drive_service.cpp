@@ -1,4 +1,4 @@
-#include "test_drive_service.h"
+﻿#include "test_drive_service.h"
 
 TestDriveService::TestDriveService(shared_ptr<pqxx::connection> connection) : conn(connection) {}
 crow::json::wvalue TestDriveService::getAllTestDrives() {
@@ -200,4 +200,41 @@ crow::json::wvalue TestDriveService::getTestDriveByTestId(string testId) {
 	result["date"] = r[0]["date"].c_str();
 	result["comment"] = r[0]["comments"].c_str();
 	return result;
+}
+string TestDriveService::getAllTestDrivesCSV() {
+	pqxx::work txn(*conn);
+	pqxx::result r = txn.exec(
+		"SELECT t.id, c.first_name, c.last_name, v.make, v.model, t.date, t.comments "
+		"FROM test_drive_record t "
+		"JOIN customers c ON t.customer_id = c.id "
+		"JOIN vehicles v ON t.vehicle_id = v.id"
+	);
+
+	std::ostringstream csv;
+
+	// Header row
+	csv << "id,firstName,lastName,make,model,date,comment\n";
+
+	// Data rows
+	for (const auto& row : r) {
+		csv << row["id"].c_str() << ","
+			<< row["first_name"].c_str() << ","
+			<< row["last_name"].c_str() << ","
+			<< row["make"].c_str() << ","
+			<< row["model"].c_str() << ","
+			<< row["date"].c_str() << ",";
+
+		// Comments may contain commas → wrap in quotes
+		std::string comment = row["comments"].c_str();
+		if (comment.find(',') != std::string::npos) {
+			csv << "\"" << comment << "\"";
+		}
+		else {
+			csv << comment;
+		}
+
+		csv << "\n";
+	}
+
+	return csv.str();
 }

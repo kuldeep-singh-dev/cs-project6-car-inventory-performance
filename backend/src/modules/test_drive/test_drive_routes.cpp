@@ -42,4 +42,8 @@ void registerTestDriveRoutes(crow::SimpleApp& app) {
 		([](const crow::request& req, crow::response& res, string vehicleId) {
 		testDriveController.getTestDriveByVehicleId(res, vehicleId);
 			});
+	CROW_ROUTE(app, "/testdrive/export/csv").methods(crow::HTTPMethod::GET)
+		([](crow::response& res) {
+		testDriveController.getExportCsV(res);
+			});
 }

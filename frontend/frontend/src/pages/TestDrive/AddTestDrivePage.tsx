@@ -39,13 +39,27 @@ const AddTestDrivePage = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    try{
+  e.preventDefault();
+  setError("");
+
+    try {
         const created = await testDriveService.create(form);
+
+        // Prevent navigating with undefined ID
+        if (!created || !created.id) {
+        setError("Failed to create test drive. No ID returned.");
+        return;
+        }
+
         navigate(`/testdrive/${created.id}`);
-    }catch(err:any){
-        setError(err.message || "Failed to create test drive.");
+    } catch (err: any) {
+        const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create test drive.";
+
+        setError(msg);
     }
   };
 

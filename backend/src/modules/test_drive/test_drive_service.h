@@ -23,5 +23,5 @@ public:
 	crow::json::wvalue getTestDriveByVehicleId(const string vehicleId);
 
 	crow::json::wvalue getTestDriveByTestId(string testId);
-	
+	string getAllTestDrivesCSV();
 };
