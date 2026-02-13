@@ -49,3 +49,11 @@
 .addTDSaveBtn:hover {
   background: #1976d2;
 }
+.tdError {
+  background: #ffe5e5;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #ffb3b3;
+}

@@ -9,7 +9,7 @@ import "./AddTestDrivePage.css";
 
 const AddTestDrivePage = () => {
   const navigate = useNavigate();
-
+  const [error, setError] = useState("");
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
 
@@ -40,14 +40,19 @@ const AddTestDrivePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const created = await testDriveService.create(form);
-    navigate(`/testdrive/${created.id}`);
+    setError("");
+    try{
+        const created = await testDriveService.create(form);
+        navigate(`/testdrive/${created.id}`);
+    }catch(err:any){
+        setError(err.message || "Failed to create test drive.");
+    }
   };
 
   return (
     <div className="addTDPage">
       <h1 className="addTDTitle">Add Test Drive</h1>
-
+      {error && <div className="tdError">{error}</div>}
       <form className="addTDForm" onSubmit={handleSubmit}>
         <label className="addTDLabel">Customer</label>
         <select

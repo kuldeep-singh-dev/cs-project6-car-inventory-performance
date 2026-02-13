@@ -1,7 +1,5 @@
 import api from "../services/api";
 import type { TestDriveRev, TestDriveSend, TestDrivePost, TestDrivePatch} from "../types/testDrive";
-import type { Customer } from "../types/customer";
-import type { Vehicle } from "../types/vehicle";
 
 export const testDriveService = {
   getAll: async (): Promise<TestDriveRev[]> => {
@@ -14,10 +12,21 @@ export const testDriveService = {
     return res.data;
   },
 
-  create: async (data:TestDrivePost): Promise<TestDriveSend> => {
-    const res = await api.post<TestDriveSend>("/testdrive/post", data);
+  create: async (data: TestDrivePost): Promise<TestDriveRev> => {
+  try {
+    const res = await api.post<TestDriveRev>("/testdrive/post", data);
     return res.data;
-  },
+  } catch (err: any) {
+    // Extract backend message if it exists
+    const message =
+      err.response?.data?.message ||
+      err.response?.data ||
+      "Failed to create test drive.";
+
+    throw new Error(message);
+  }
+},
+
 
   update: async (
     id: string,
@@ -32,13 +41,13 @@ export const testDriveService = {
   },
 
   // helper endpoints (as per SDD)
-  getCustomers: async (): Promise<Customer[]> => {
-    const res = await api.get<Customer[]>("/customers");
-    return res.data;
-  },
+  getByCustomerId: async (id: string): Promise<TestDriveRev[]> => {
+  const res = await api.get<TestDriveRev[]>(`/testdrive/customer/${id}`);
+  return res.data;
+},
 
-  getVehicles: async (): Promise<Vehicle[]> => {
-    const res = await api.get<Vehicle[]>("/vehicles");
-    return res.data;
-  },
+getByVehicleId: async (id: string): Promise<TestDriveRev[]> => {
+  const res = await api.get<TestDriveRev[]>(`/testdrive/vehicle/${id}`);
+  return res.data;
+},
 };
