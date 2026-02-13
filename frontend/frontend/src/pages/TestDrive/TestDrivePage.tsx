@@ -40,7 +40,7 @@ const TestDrivePage = () => {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchTestDrives();
   }, [customerId, vehicleId]);
@@ -64,7 +64,12 @@ const TestDrivePage = () => {
       </div>
 
       <div className="tdActions">
-        <button className="tdBtn">Export CSV</button>
+        <button className="tdBtn"
+        onClick={() => {
+        window.location.href = "/api/testdrive/export/csv";
+        }}
+
+        >Export CSV</button>
         <button className="tdBtnPrimary" onClick={() => navigate("/testdrive/add")}>
           Add
         </button>

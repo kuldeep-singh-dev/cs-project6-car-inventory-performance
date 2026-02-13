@@ -220,3 +220,11 @@ void TestDriveController::getTestDriveById(crow::response& res, string testId) {
 	}
 
 }
+void TestDriveController::getExportCsV(crow::response& res) {
+	auto csv = testDriveService.getAllTestDrivesCSV();
+	res.set_header("Content-Type", "text/csv");
+	res.set_header("Content-Disposition", "attachment; filename=\"testdrives.csv\"");
+	res.code = 200;
+	res.write(csv);
+	res.end();
+}

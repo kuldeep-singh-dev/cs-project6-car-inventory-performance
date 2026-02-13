@@ -19,10 +19,11 @@ export const testDriveService = {
   } catch (err: any) {
     // Extract backend message if it exists
     const message =
+      err.response?.data?.error ||
       err.response?.data?.message ||
-      err.response?.data ||
+      (typeof err.response?.data === "string" ? err.response.data : null) ||
+      err.message ||
       "Failed to create test drive.";
-
     throw new Error(message);
   }
 },
@@ -36,8 +37,9 @@ export const testDriveService = {
     return res.data;
   },
 
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/testdrive/${id}`);
+  getCsvReport: async (): Promise<Blob> => {
+    const res = await api.get(`/testdrive/export}`, { responseType: "blob" });
+    return res.data
   },
 
   // helper endpoints (as per SDD)
