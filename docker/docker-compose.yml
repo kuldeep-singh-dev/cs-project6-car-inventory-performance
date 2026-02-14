@@ -82,7 +82,7 @@ services:
     working_dir: /app
     volumes:
       - ../frontend/frontend:/app
-      - /app/node_modules     
+      - /app/node_modules    
     ports:
       - "5173:5173"
     command: sh -c "npm install && npm run dev" 

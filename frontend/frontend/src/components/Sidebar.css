@@ -1,0 +1,89 @@
+/* Sidebar (drawer) */
+.sidebar{
+  height: 100%;
+  padding: 18px 14px;
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+  overflow: auto;
+}
+
+.sideBrand{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 14px;
+  margin-bottom: 10px;
+}
+.sideMark{
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  box-shadow: 0 10px 20px rgba(37,99,235,.18);
+}
+.sideText{
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.sideText strong{ font-size: .98rem; }
+.sideText span{ font-size: .78rem; color: var(--muted); }
+
+.sideNav{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+}
+
+.sideLink{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.sideLink:hover{
+  background: var(--panel-2);
+  color: var(--text);
+  border-color: rgba(15,23,42,.08);
+  text-decoration: none;
+}
+.sideLink.active{
+  background: rgba(37,99,235,.12);
+  border-color: rgba(37,99,235,.25);
+  color: var(--text);
+}
+
+.sideIcon{
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(37,99,235,.08);
+  border: 1px solid rgba(37,99,235,.12);
+}
+
+.sideFooter{
+  margin-top: 14px;
+  padding: 0 10px 8px;
+}
+.sideHint{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed rgba(15,23,42,.16);
+  background: rgba(2,6,23,.02);
+}
+.dot{
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+}

@@ -1,0 +1,62 @@
+ .dash{
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dashHero{
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.dashQuote{
+  position: relative;
+  padding: 10px 8px 6px 8px;
+  max-width: 760px;
+}
+
+.dashQuoteMark{
+  font-size: 56px;
+  line-height: 1;
+  color: rgba(37,99,235,.22);
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.dashQuoteText{
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+
+.dashQuoteBy{
+  margin-top: 10px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.dashSection{
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.dashSectionHeader{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dashH2{
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 900;
+}

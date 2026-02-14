@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AddSalesPage.css";
+import InvoiceModal, { type InvoiceData } from "../../components/InvoiceModal";
 import { salesService } from "../../services/salesService";
 import { vehicleService } from "../../services/vehicleService";
 import type { Vehicle } from "../../types/vehicle";
@@ -43,6 +44,10 @@ const AddSalePage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
+  const [invoice, setInvoice] = useState<InvoiceData | null>(null);
+
 
   const selectedVehicle = useMemo(
     () => vehicles.find((v) => v.id === vehicleId) || null,
@@ -92,7 +97,24 @@ const AddSalePage = () => {
         sale_price: price,
       });
 
-      navigate("/sales");
+      // Open invoice preview instead of immediately navigating away
+      const cust = customers.find((c) => c.id === customerId);
+      const veh = vehicles.find((v) => v.id === vehicleId);
+
+      if (!cust || !veh) {
+        // Fallback: if something is missing, just go back to Sales
+        navigate("/sales");
+        return;
+      }
+
+      setInvoice({
+        saleId: created.sale_id,
+        date: created.date,
+        salePrice: created.sale_price,
+        customer: cust,
+        vehicle: veh,
+      });
+      setInvoiceOpen(true);
       console.log("Created sale:", created);
     } catch (e: any) {
       setError(toErrorMessage(e));
@@ -173,6 +195,16 @@ const AddSalePage = () => {
           {saving ? "Generating..." : "Generate"}
         </button>
       </div>
+
+      <InvoiceModal
+        open={invoiceOpen}
+        invoice={invoice}
+        onClose={() => {
+          setInvoiceOpen(false);
+          // After closing invoice, take user back to Sales list
+          navigate("/sales");
+        }}
+      />
     </div>
   );
 };

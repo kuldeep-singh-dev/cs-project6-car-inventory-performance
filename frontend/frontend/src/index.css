@@ -1,24 +1,16 @@
-html, body, #root {
-  margin: 0;
-  padding: 0;
+/* Keep index.css for tiny app-specific utilities. Global look & feel is in styles/theme.css */
+
+.appLayout{
   height: 100%;
   width: 100%;
 }
 
-body {
-  margin: 0;
-}
-
-.appLayout {
+/* Allow route pages (inside MainLayout) to reliably fill the scroll container height */
+.container.page{
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  width: 100%;
+  min-height: 0;
 }
 
-.appContent {
-  flex: 1;
-  overflow: hidden; /* important */
-  display: flex;
-  flex-direction: column;
-}
+.hidden{ display: none !important; }
