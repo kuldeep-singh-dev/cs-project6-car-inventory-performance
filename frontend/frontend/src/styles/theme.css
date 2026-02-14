@@ -1,0 +1,148 @@
+:root{
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --panel-2: #fbfbfe;
+  --border: rgba(15, 23, 42, .10);
+
+  --text: rgba(15, 23, 42, .92);
+  --muted: rgba(15, 23, 42, .65);
+  --faint: rgba(15, 23, 42, .50);
+
+  --brand: #2563eb;
+  --brand-2: #06b6d4;
+  --danger: #ef4444;
+  --success: #16a34a;
+  --warn: #f59e0b;
+
+  --r-xl: 18px;
+  --r-lg: 14px;
+  --r-md: 12px;
+
+  --shadow: 0 10px 24px rgba(2, 6, 23, .08);
+
+  --gap-1: 8px;
+  --gap-2: 12px;
+  --gap-3: 16px;
+  --gap-4: 24px;
+
+  --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+
+*{ box-sizing: border-box; }
+
+html, body{
+  height: 100%;
+  margin: 0;
+  font-family: var(--font);
+  color: var(--text);
+  background: linear-gradient(180deg, #ffffff 0%, var(--bg) 45%, var(--bg) 100%);
+}
+
+a{ color: inherit; text-decoration: none; }
+a:hover{ text-decoration: underline; }
+
+.container{
+  width: min(1200px, 92vw);
+  margin: 0 auto;
+  padding: var(--gap-4) 0;
+}
+
+/* Shell / Layout */
+.shell{
+  min-height: 100vh;
+  display: flex;
+  background: transparent;
+}
+.mainArea{
+  flex: 1;
+  min-width: 0;
+}
+.content{
+  padding-bottom: 28px;
+}
+
+/* Cards */
+.card{
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow);
+}
+.cardBody{ padding: 16px; }
+
+/* Buttons */
+.btnPrimary, .btnGhost, .salesBtn, .salesBtnPrimary, .tdBtnPrimary, .tdBtn, .tdBtnSmall, .vehiclesAddBtn{
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.btnPrimary, .salesBtnPrimary, .tdBtnPrimary{
+  border-color: rgba(37,99,235,.45);
+  background: linear-gradient(135deg, rgba(37,99,235,.98), rgba(6,182,212,.55));
+  color: white;
+}
+.btnPrimary:hover, .salesBtnPrimary:hover, .tdBtnPrimary:hover{ filter: brightness(1.03); }
+
+.btnGhost{
+  background: var(--panel-2);
+}
+.btnGhost:hover{ background: #f2f4ff; }
+
+.salesBtn:hover, .tdBtn:hover, .tdBtnSmall:hover, .vehiclesAddBtn:hover{
+  background: var(--panel-2);
+}
+
+/* Inputs */
+input, select, textarea{
+  font-family: var(--font);
+}
+
+.input, .salesInput, .addSaleField input, .addSaleField select, .addSaleField textarea,
+.tdForm input, .tdForm select, .tdForm textarea,
+.vehicleFilter input, .vehicleFilter select{
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus{
+  border-color: rgba(37,99,235,.55);
+  box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+
+/* Make dropdown options readable */
+select option{
+  color: var(--text);
+  background: var(--panel);
+}
+
+/* Table */
+.tableWrap, .salesTableWrap, .tdTableWrap{
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--panel);
+}
+
+/* Badges */
+.badge{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: .82rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.badgeSuccess{ border-color: rgba(22,163,74,.35); background: rgba(22,163,74,.10); color: rgba(15,23,42,.85); }
+.badgeWarn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.10); color: rgba(15,23,42,.85); }
+
+.muted{ color: var(--muted); }

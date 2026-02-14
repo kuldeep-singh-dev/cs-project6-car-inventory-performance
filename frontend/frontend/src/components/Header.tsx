@@ -1,34 +1,29 @@
-import { Link, NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import "./Header.css";
 
-const Header = () => {
+type HeaderProps = {
+  title: string;
+  onToggleSidebar: () => void;
+};
+
+const Header = ({ title, onToggleSidebar }: HeaderProps) => {
   return (
-    <header className="topHeader">
-      <div className="topHeaderLeft">
-        <Link to="/dashboard" className="topHeaderBrand">
-          Home
-        </Link>
+    <header className="topbar">
+      <button className="iconBtn" onClick={onToggleSidebar} aria-label="Open menu">
+        ☰
+      </button>
+
+      <div className="topbarTitle">
+        <div className="titleText">{title}</div>
       </div>
 
-      <nav className="topHeaderNav">
-        <NavLink to="/vehicles" className={({ isActive }) => (isActive ? "navLink active" : "navLink")}>
-          Vehicles
-        </NavLink>
-        <NavLink to="/customers" className={({ isActive }) => (isActive ? "navLink active" : "navLink")}>
-          Customers
-        </NavLink>
-        <NavLink
-          to="/sales"
-          className={({ isActive }) =>
-            isActive ? "navLink active" : "navLink"
-          }
-        >
-          Sales
-        </NavLink>
-        <NavLink to="/testdrive" className={({ isActive }) => (isActive ? "navLink active" : "navLink")}>
-          Test Drive
-        </NavLink>
-      </nav>
+      <div className="topbarRight">
+        <nav className="quickNav" aria-label="Quick navigation">
+          <NavLink to="/vehicles" className={({isActive}) => isActive ? "quickLink active" : "quickLink"}>Vehicles</NavLink>
+          <NavLink to="/sales" className={({isActive}) => isActive ? "quickLink active" : "quickLink"}>Sales</NavLink>
+          <NavLink to="/testdrive" className={({isActive}) => isActive ? "quickLink active" : "quickLink"}>Test Drive</NavLink>
+        </nav>
+      </div>
     </header>
   );
 };

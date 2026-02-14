@@ -1,54 +1,59 @@
-.vehicleFilter {
+ .vehicleFilter{
   width: 100%;
-  padding: 24px; /* increased padding */
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px; /* more vertical spacing */
-
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
-
-  background: transparent;
-
-  box-sizing: border-box;
+  gap: 18px;
 }
 
-.vehicleFilterRow {
+.vehicleFilterRow{
   display: flex;
-  gap: 24px;
+  gap: 14px;
   align-items: center;
   flex-wrap: wrap;
 }
 
-.checkboxLabel {
+.checkboxLabel{
   display: flex;
   gap: 8px;
   align-items: center;
-}
-
-.sectionTitle {
-  margin: 0 0 10px 0;
+  color: var(--text);
   font-weight: 700;
-  font-size: 15px;
 }
 
-.twoCol {
+.sectionTitle{
+  margin: 0;
+  font-weight: 900;
+  font-size: .92rem;
+  color: var(--text);
+}
+
+.twoCol{
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
-.input,
-.select {
+.input, .select{
   width: 100%;
-  height: 44px; /* taller inputs */
+  height: 44px;
   padding: 10px 12px;
   box-sizing: border-box;
   border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
 }
 
-.applyBtn {
-  height: 48px; /* taller button */
+.applyBtn{
+  height: 46px;
   border-radius: 12px;
   cursor: pointer;
+  border: 1px solid rgba(37,99,235,.45);
+  background: rgba(37,99,235,.10);
+  font-weight: 900;
+}
+
+.applyBtn:hover{
+  background: rgba(37,99,235,.14);
 }

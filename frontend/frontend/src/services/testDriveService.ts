@@ -1,4 +1,4 @@
-import api from "../services/api";
+import api from "./api";
 import type { TestDriveRev, TestDriveSend, TestDrivePost, TestDrivePatch} from "../types/testDrive";
 
 export const testDriveService = {

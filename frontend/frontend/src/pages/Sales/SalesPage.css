@@ -1,15 +1,17 @@
-.salesPage {
-  height: 100%;
+ .salesPage{
+  /* Use viewport height so the table scroll stays inside this page */
+  height: 100vh;
   width: 100%;
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  min-height: 0;
+  overflow: hidden;
 }
 
-/* top row buttons */
-.salesTopBar {
+.salesTopBar{
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -17,115 +19,89 @@
   flex-wrap: wrap;
 }
 
-.salesLeftActions {
+.salesLeftActions{
   display: flex;
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.salesBtn {
-  padding: 10px 14px;
-  border: 1px solid rgba(120, 120, 120, 0.35);
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.salesBtnPrimary {
-  padding: 10px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  border: 1px solid rgba(120, 120, 120, 0.35);
-}
-
-/* weekly report mini form */
-.weeklyBox {
+.weeklyBox{
   display: flex;
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
 }
 
-.weeklyInputs {
+.weeklyInputs{
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
-.salesInput {
-  height: 38px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(120, 120, 120, 0.35);
-  box-sizing: border-box;
-}
-
-/* title */
-.salesHeader {
+.salesHeader{
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.salesTitle {
+.salesTitle{
   margin: 0;
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 900;
 }
 
-/* table scroll container */
-.salesTableWrap {
+.salesTableWrap{
   flex: 1;
   min-height: 0;
   overflow: auto;
-  border: 1px solid rgba(120, 120, 120, 0.35);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--panel);
 }
 
-/* table */
-.salesTable {
+.salesTable{
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  min-width: 700px; /* forces horizontal scroll on small screens */
+  min-width: 720px;
 }
 
-.salesTable thead th {
+.salesTable thead th{
   position: sticky;
   top: 0;
   z-index: 2;
   text-align: left;
   padding: 14px;
-  border-bottom: 1px solid rgba(120, 120, 120, 0.35);
-  background: rgba(20, 20, 20, 0.7);
-  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-weight: 900;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
 }
 
-.salesTable tbody td {
+.salesTable tbody td{
   padding: 14px;
-  border-bottom: 1px solid rgba(120, 120, 120, 0.2);
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  color: var(--text);
 }
 
-.salesRow:hover {
-  background: rgba(255, 255, 255, 0.04);
+.salesRow:hover{
+  background: rgba(37,99,235,.05);
 }
 
-.salesEmpty {
+.salesEmpty{
   text-align: center;
   padding: 28px !important;
+  color: var(--muted);
 }
 
-.salesState {
-  padding: 16px;
-}
+.salesState{ padding: 16px; }
 
-.salesError {
-  color: #ef4444;
-}
+.salesError{ color: var(--danger); }
 
-/* mobile */
-@media (max-width: 900px) {
-  .salesPage {
-    padding: 16px;
-  }
+@media (max-width: 900px){
+  .salesPage{ padding: 14px; }
 }

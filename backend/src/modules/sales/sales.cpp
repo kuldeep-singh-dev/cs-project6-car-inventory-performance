@@ -99,7 +99,7 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             std::string startDate = startParam;
             std::string endDate   = endParam;
 
-            // 1️⃣ Validate date format + calendar validity
+            // Validate date format + calendar validity
             if (!isValidDate(startDate) || !isValidDate(endDate)) {
                 return crow::response(
                     400,
@@ -110,12 +110,12 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             std::time_t startTime = toTimeT(startDate);
             std::time_t endTime   = toTimeT(endDate);
 
-            // 2️⃣ Logical validation
+            // Logical validation
             if (startTime >= endTime) {
                 return crow::response(400, "start date must be before end date");
             }
 
-            // 3️⃣ Safety limit (10 years max)
+            // Safety limit (10 years max)
             const int MAX_WEEKS = 520;
             int weekCounter = 0;
 
@@ -386,7 +386,7 @@ void registerSalesRoutes(crow::SimpleApp& app) {
 
             // Customer information
             invoice["customer"]["customer_id"] = row["customer_id"].c_str();
-            invoice["customer"]["name"] = customer_name;  // ✅ Use the string variable
+            invoice["customer"]["name"] = customer_name;  // Use the string variable
             invoice["customer"]["email"] = row["email"].c_str();
             invoice["customer"]["phone"] = row["ph_number"].c_str();
             invoice["customer"]["address"] = row["address"].is_null() ? "" : row["address"].c_str();
@@ -562,7 +562,7 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             std::string error_msg = e.what();
             crow::json::wvalue error;
             
-            // ✅ Handle database constraint violations
+            // Handle database constraint violations
             if (error_msg.find("foreign key constraint") != std::string::npos) {
                 if (error_msg.find("vehicle_id") != std::string::npos) {
                     error["error"] = "Vehicle not found";
@@ -618,7 +618,7 @@ void registerSalesRoutes(crow::SimpleApp& app) {
         pqxx::work txn(*conn);
         pqxx::result r = txn.exec_prepared("get_sales_by_vehicle", vehicle_id);
 
-        // ✅ Explicit JSON array
+        // Explicit JSON array
         crow::json::wvalue result = crow::json::wvalue::list();
         int i = 0;
 

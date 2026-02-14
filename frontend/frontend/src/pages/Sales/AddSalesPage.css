@@ -95,3 +95,8 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Ensure dropdown items are readable */
+.addSaleField select{ background: var(--panel); color: var(--text); }
+.addSaleField select option{ color: var(--text); background: var(--panel); }
