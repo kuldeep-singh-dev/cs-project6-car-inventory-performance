@@ -17,6 +17,7 @@ add_library(MainLibrary
     src/modules/customer/customer.cpp
     src/modules/inventory/inventory_model.cpp
     src/db/db_connection.cpp
+    src/modules/images/images.cpp
 )
 
 target_include_directories(MainLibrary
@@ -73,6 +74,14 @@ add_executable(SalesUnitTests
 target_include_directories(SalesUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src ${PQXX_INCLUDE_DIRS})
 target_link_libraries(SalesUnitTests PRIVATE gtest gtest_main MainLibrary ${PQXX_LIBRARIES})
 add_test(NAME SalesUnitTests COMMAND SalesUnitTests)
+
+# Images module tests
+add_executable(ImagesUnitTests
+    test/images_tests/ImagesTest.cpp
+)
+target_include_directories(ImagesUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src ${PQXX_INCLUDE_DIRS})
+target_link_libraries(ImagesUnitTests PRIVATE gtest gtest_main MainLibrary ${PQXX_LIBRARIES})
+add_test(NAME ImagesUnitTests COMMAND ImagesUnitTests)
 
 # Test-drive module tests
 add_executable(TestDriveUnitTests

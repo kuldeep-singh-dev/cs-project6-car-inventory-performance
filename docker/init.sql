@@ -154,6 +154,24 @@ WHERE v.status = 'Available'
 LIMIT 120;
 
 -- =========================================================
+-- SEED IMAGES (1200) - 2 images per vehicle
+-- =========================================================
+INSERT INTO Images (vehicle_id, img_url)
+SELECT
+    v.id,
+    image_urls[1 + floor(random() * array_length(image_urls, 1))::int]
+FROM Vehicles v,
+     generate_series(1, 2),  -- 2 images per vehicle
+     (SELECT ARRAY[
+        'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800',
+        'https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=800',
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800',
+        'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=800',
+        'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800',
+        'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800'
+     ] AS image_urls) urls;
+
+-- =========================================================
 -- SUMMARY
 -- =========================================================
 SELECT 'Vehicles' AS table, COUNT(*) FROM Vehicles
@@ -163,3 +181,5 @@ UNION ALL
 SELECT 'Sales', COUNT(*) FROM Sales
 UNION ALL
 SELECT 'Test Drives', COUNT(*) FROM Test_Drive_Record;
+UNION ALL
+SELECT 'Images', COUNT(*) FROM Images;
