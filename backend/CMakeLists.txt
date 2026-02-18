@@ -75,6 +75,14 @@ target_include_directories(SalesUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src ${PQXX
 target_link_libraries(SalesUnitTests PRIVATE gtest gtest_main MainLibrary ${PQXX_LIBRARIES})
 add_test(NAME SalesUnitTests COMMAND SalesUnitTests)
 
+# Images module tests
+add_executable(ImagesUnitTests
+    test/images_tests/ImagesTest.cpp
+)
+target_include_directories(ImagesUnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src ${PQXX_INCLUDE_DIRS})
+target_link_libraries(ImagesUnitTests PRIVATE gtest gtest_main MainLibrary ${PQXX_LIBRARIES})
+add_test(NAME ImagesUnitTests COMMAND ImagesUnitTests)
+
 # Test-drive module tests
 add_executable(TestDriveUnitTests
     test/test_drive_tests/TestDriveTest.cpp
