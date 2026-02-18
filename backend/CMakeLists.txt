@@ -17,6 +17,7 @@ add_library(MainLibrary
     src/modules/customer/customer.cpp
     src/modules/inventory/inventory_model.cpp
     src/db/db_connection.cpp
+    src/modules/images/images.cpp
 )
 
 target_include_directories(MainLibrary

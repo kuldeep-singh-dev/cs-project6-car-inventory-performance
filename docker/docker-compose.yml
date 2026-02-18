@@ -69,6 +69,7 @@ services:
       - db
     volumes:
       - ../backend:/shareddocker
+      - vehicle-images:/shareddocker/uploads
     ports:
       - "3000:3000"
     stdin_open: true
@@ -91,7 +92,10 @@ services:
     networks:
       - dealerdrive-network
 
-# ✅ Define the shared network
+# Define the shared network
 networks:
   dealerdrive-network:
     driver: bridge
+
+volumes:
+  vehicle-images: 
