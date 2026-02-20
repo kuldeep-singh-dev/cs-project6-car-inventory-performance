@@ -11,6 +11,9 @@ const VehiclesPage = () => {
   const navigate = useNavigate();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const itemsPerPage = 50;
 
   const [filters, setFilters] = useState<FilterValues>({
     available: false,
@@ -75,6 +78,28 @@ const VehiclesPage = () => {
     return filtered;
   }, [vehicles, filters]);
 
+  // Paginate the filtered results
+  const paginatedVehicles = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredVehicles.slice(startIndex, endIndex);
+  }, [filteredVehicles, currentPage]);
+
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      // Scroll the content area to top
+      document.querySelector('.vehiclesContent')?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   if (loading) return <div className="vehiclesLoading">Loading...</div>;
 
   return (
@@ -101,11 +126,58 @@ const VehiclesPage = () => {
           {filteredVehicles.length === 0 ? (
             <div className="vehiclesEmpty">No vehicles match the filters.</div>
           ) : (
-            <div className="vehiclesGrid">
-              {filteredVehicles.map((vehicle) => (
-                <VehicleInfoCard key={vehicle.id} vehicle={vehicle} />
-              ))}
-            </div>
+            <>
+              <div className="vehiclesStats">
+                Showing {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredVehicles.length)} of {filteredVehicles.length} vehicles
+              </div>
+
+              <div className="vehiclesGrid">
+                {paginatedVehicles.map((vehicle) => (
+                  <VehicleInfoCard key={vehicle.id} vehicle={vehicle} />
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="pagination">
+                  <button 
+                    onClick={() => handlePageChange(1)}
+                    disabled={currentPage === 1}
+                    className="paginationButton"
+                  >
+                    First
+                  </button>
+                  
+                  <button 
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="paginationButton"
+                  >
+                    Previous
+                  </button>
+
+                  <span className="pageInfo">
+                    Page {currentPage} of {totalPages}
+                  </span>
+
+                  <button 
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="paginationButton"
+                  >
+                    Next
+                  </button>
+
+                  <button 
+                    onClick={() => handlePageChange(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="paginationButton"
+                  >
+                    Last
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
       </div>
