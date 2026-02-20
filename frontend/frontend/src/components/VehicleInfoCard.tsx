@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Vehicle } from "../types/vehicle";
 import { imageService } from "../services/imageService";
@@ -10,25 +9,10 @@ interface Props {
 
 const VehicleInfoCard = ({ vehicle }: Props) => {
   const navigate = useNavigate();
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchThumbnail = async () => {
-      try {
-        const images = await imageService.getByVehicle(vehicle.id);
-        if (images.length > 0) {
-          setThumbnailUrl(imageService.getUrl(images[0].img_url));
-        }
-      } catch (error) {
-        console.error("Failed to fetch thumbnail:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchThumbnail();
-  }, [vehicle.id]);
+  
+  const thumbnailUrl = vehicle.first_image 
+    ? imageService.getUrl(vehicle.first_image)
+    : "";
 
   return (
     <div
@@ -36,9 +20,7 @@ const VehicleInfoCard = ({ vehicle }: Props) => {
       onClick={() => navigate(`/vehicles/${vehicle.id}`)}
     >
       <div className="vehicleCardImage">
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '20px' }}>Loading...</div>
-        ) : thumbnailUrl ? (
+        {thumbnailUrl ? (
           <img 
             src={thumbnailUrl} 
             alt={`${vehicle.make} ${vehicle.model}`}
