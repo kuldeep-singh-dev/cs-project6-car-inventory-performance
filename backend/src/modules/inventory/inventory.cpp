@@ -14,7 +14,14 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
             auto conn = getDbConnection();      
             pqxx::work txn(*conn);              
 
-                    pqxx::result res = txn.exec("SELECT * FROM Vehicles");
+                pqxx::result res = txn.exec(
+                    "SELECT "
+                    "  v.id, v.vin, v.make, v.model, v.year, v.odometer, "
+                    "  v.fuel_type, v.transmission, v.trim, v.market_price, v.status, "
+                    "  (SELECT img_url FROM Images WHERE vehicle_id = v.id LIMIT 1) as first_image "
+                    "FROM Vehicles v "
+                    "ORDER BY v.year DESC"
+                );
                 crow::json::wvalue result;
                 result = crow::json::wvalue::list();
 
@@ -35,6 +42,8 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
 
                     vehicle["market_price"] = row["market_price"].as<double>();
                     vehicle["status"] = row["status"].c_str();
+
+                    vehicle["first_image"] = row["first_image"].is_null() ? "" : row["first_image"].as<std::string>();
 
                     result[i++] = std::move(vehicle);   //list indexing works
                 }

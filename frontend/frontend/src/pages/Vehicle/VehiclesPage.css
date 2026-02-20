@@ -82,3 +82,49 @@
   .vehiclesContent{ height: auto; overflow: visible; }
   .vehiclesGrid{ grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
 }
+
+.vehiclesStats {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #666;
+  font-weight: 500;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.paginationButton {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.paginationButton:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.paginationButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pageInfo {
+  margin: 0 15px;
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+}

@@ -13,6 +13,22 @@ export const imageService = {
     return res.data;
   },
 
+  // Upload image for a vehicle
+  upload: async (vehicleId: string, file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    const res = await api.post(`/vehicles/${vehicleId}/images`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+    return res.data;
+  },
+
+  // Delete an image
+  delete: async (imageId: string) => {
+    await api.delete(`/images/${imageId}`);
+  },
+
   // Get full image URL
   getUrl: (imgUrl: string): string => {
     // If it's an external URL (Unsplash), return as-is
