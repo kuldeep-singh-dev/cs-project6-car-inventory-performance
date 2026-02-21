@@ -56,6 +56,57 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
         }
     });
 
+    // Get available vehicles
+    CROW_ROUTE(app, "/vehicles/available")
+    .methods(crow::HTTPMethod::GET)
+    ([]() {
+        try {
+            auto conn = getDbConnection();      
+            pqxx::work txn(*conn);              
+
+                pqxx::result res = txn.exec(
+                    "SELECT "
+                    "  v.id, v.vin, v.make, v.model, v.year, v.odometer, "
+                    "  v.fuel_type, v.transmission, v.trim, v.market_price, v.status, "
+                    "  (SELECT img_url FROM Images WHERE vehicle_id = v.id LIMIT 1) as first_image "
+                    "FROM Vehicles v "
+                    "WHERE v.status = 'Available' "
+                    "ORDER BY v.year DESC"
+                );
+                crow::json::wvalue result;
+                result = crow::json::wvalue::list();
+
+                size_t i = 0;
+                for (auto row : res) {
+                    crow::json::wvalue vehicle;
+                    vehicle["id"] = row["id"].c_str();
+                    vehicle["vin"] = row["vin"].c_str();
+                    vehicle["make"] = row["make"].c_str();
+                    vehicle["model"] = row["model"].c_str();
+                    vehicle["year"] = row["year"].as<int>();
+                    vehicle["odometer"] = row["odometer"].as<int>();
+                    vehicle["fuel_type"] = row["fuel_type"].c_str();
+                    vehicle["transmission"] = row["transmission"].c_str();
+
+                    if (row["trim"].is_null()) vehicle["trim"] = nullptr;
+                    else vehicle["trim"] = row["trim"].c_str();
+
+                    vehicle["market_price"] = row["market_price"].as<double>();
+                    vehicle["status"] = row["status"].c_str();
+
+                    vehicle["first_image"] = row["first_image"].is_null() ? "" : row["first_image"].as<std::string>();
+
+                    result[i++] = std::move(vehicle);   //list indexing works
+                }
+
+                return crow::response{result};
+
+
+        } catch (const std::exception& e) {
+            return crow::response(500, std::string("Database error: ") + e.what());
+        }
+    });
+
     // Get vehicle by ID
     CROW_ROUTE(app, "/vehicles/<string>")
     .methods(crow::HTTPMethod::GET)

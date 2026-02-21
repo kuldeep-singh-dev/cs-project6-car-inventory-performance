@@ -5,7 +5,8 @@
 
 std::shared_ptr<pqxx::connection> getDbConnection() {
     try {
-        auto conn = std::make_shared<pqxx::connection>(
+        thread_local std::shared_ptr<pqxx::connection> conn =
+        std::make_shared<pqxx::connection>(
             "host=db "
             "port=5432 "
             "dbname=dealerdrive "
@@ -23,4 +24,3 @@ std::shared_ptr<pqxx::connection> getDbConnection() {
         throw;
     }
 }
-
