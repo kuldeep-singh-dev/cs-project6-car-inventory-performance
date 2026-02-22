@@ -1,10 +1,7 @@
 #include <gtest/gtest.h>
-
 #include "db/db_connection.h"
 #include "modules/customer/customer.h"
-
 #include <pqxx/pqxx>
-
 #include <chrono>
 #include <optional>
 #include <sstream>
@@ -13,7 +10,6 @@
 
 namespace
 {
-
     std::string uniqueSuffix()
     {
         auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -22,9 +18,9 @@ namespace
         return oss.str();
     }
 
-    void deleteCustomerById(pqxx::connection &conn, const std::string &id)
+    void deleteCustomerById(ConnectionGuard& guard, const std::string& id)
     {
-        pqxx::work txn(conn);
+        pqxx::work txn(guard.get());
         txn.exec_params("DELETE FROM Customers WHERE id = $1", id);
         txn.commit();
     }
@@ -34,52 +30,42 @@ namespace
     protected:
         void SetUp() override
         {
-            conn_ = getDbConnection();
+            guard_ = std::make_unique<ConnectionGuard>(getPool());
             suffix_ = uniqueSuffix();
         }
 
         void TearDown() override
         {
-            if (!conn_)
-                return;
-            for (const auto &id : created_ids_)
+            if (!guard_) return;
+            for (const auto& id : created_ids_)
             {
-                try
-                {
-                    deleteCustomerById(*conn_, id);
-                }
-                catch (...)
-                {
-                    // Best-effort cleanup; avoid masking test failures.
-                }
+                try { deleteCustomerById(*guard_, id); }
+                catch (...) {}
             }
             created_ids_.clear();
+            guard_.reset(); // returns connection to pool
         }
 
-        pqxx::connection &conn() { return *conn_; }
+        ConnectionGuard& guard() { return *guard_; }
 
-        Customer makeCustomer(const std::string &first = "TestFirst",
-                              const std::string &last = "TestLast",
-                              const std::string &phone = "5190000000",
-                              const std::optional<std::string> &address = std::optional<std::string>("123 Test St"))
+        Customer makeCustomer(
+            const std::string& first = "TestFirst",
+            const std::string& last = "TestLast",
+            const std::string& phone = "5190000000",
+            const std::optional<std::string>& address = std::optional<std::string>("123 Test St"))
         {
             Customer c = createCustomer(
-                conn(),
-                first,
-                last,
-                phone,
+                guard(), first, last, phone,
                 "test" + suffix_ + "@example.com",
-                "DL-" + suffix_,
-                address);
+                "DL-" + suffix_, address);
             created_ids_.push_back(c.id);
             return c;
         }
 
-        std::shared_ptr<pqxx::connection> conn_;
+        std::unique_ptr<ConnectionGuard> guard_;
         std::string suffix_;
         std::vector<std::string> created_ids_;
     };
-
 }
 
 // Tests that creating a customer with valid data succeeds and returns a customer with an ID 
@@ -95,7 +81,7 @@ TEST_F(CustomerDbFixture, CreateCustomer_HappyPath)
 TEST_F(CustomerDbFixture, GetCustomerById_ReturnsCreatedCustomer)
 {
     Customer created = makeCustomer();
-    auto fetched = getCustomerById(conn(), created.id);
+    auto fetched = getCustomerById(guard(), created.id);
     ASSERT_TRUE(fetched.has_value());
     EXPECT_EQ(fetched->email, created.email);
     EXPECT_EQ(fetched->driving_licence, created.driving_licence);
@@ -105,7 +91,7 @@ TEST_F(CustomerDbFixture, GetCustomerById_ReturnsCreatedCustomer)
 TEST_F(CustomerDbFixture, GetAllCustomers_IncludesCreatedCustomer)
 {
     Customer created = makeCustomer();
-    auto all = getAllCustomers(conn());
+    auto all = getAllCustomers(guard());
     bool found = false;
     for (const auto &c : all)
     {
@@ -122,7 +108,7 @@ TEST_F(CustomerDbFixture, GetAllCustomers_IncludesCreatedCustomer)
 TEST_F(CustomerDbFixture, CreateCustomer_MissingRequiredFields_Throws)
 {
     EXPECT_THROW(
-        (void)createCustomer(conn(), "", "Last", "123", "x" + suffix_ + "@example.com", "DL-X" + suffix_, std::nullopt),
+        (void)createCustomer(guard(), "", "Last", "123", "x" + suffix_ + "@example.com", "DL-X" + suffix_, std::nullopt),
         std::invalid_argument);
 }
 
@@ -130,7 +116,7 @@ TEST_F(CustomerDbFixture, CreateCustomer_MissingRequiredFields_Throws)
 TEST_F(CustomerDbFixture, CreateCustomer_InvalidEmail_Throws)
 {
     EXPECT_THROW(
-        (void)createCustomer(conn(), "A", "B", "123", "not-an-email", "DL-Y" + suffix_, std::nullopt),
+        (void)createCustomer(guard(), "A", "B", "123", "not-an-email", "DL-Y" + suffix_, std::nullopt),
         std::invalid_argument);
 }
 
@@ -140,7 +126,7 @@ TEST_F(CustomerDbFixture, CreateCustomer_DuplicateEmail_ThrowsUniqueViolation)
     Customer created = makeCustomer();
 
     EXPECT_THROW(
-        (void)createCustomer(conn(), "Dup", "Email", "123", created.email, "DL-DUP-" + suffix_, std::nullopt),
+        (void)createCustomer(guard(), "Dup", "Email", "123", created.email, "DL-DUP-" + suffix_, std::nullopt),
         pqxx::unique_violation);
 }
 
@@ -150,7 +136,7 @@ TEST_F(CustomerDbFixture, CreateCustomer_DuplicateDrivingLicence_ThrowsUniqueVio
     Customer created = makeCustomer();
 
     EXPECT_THROW(
-        (void)createCustomer(conn(), "Dup", "DL", "123", "other" + suffix_ + "@example.com", created.driving_licence, std::nullopt),
+        (void)createCustomer(guard(), "Dup", "DL", "123", "other" + suffix_ + "@example.com", created.driving_licence, std::nullopt),
         pqxx::unique_violation);
 }
 
@@ -160,7 +146,7 @@ TEST_F(CustomerDbFixture, PatchCustomer_UpdatesPhoneAndAddress)
     Customer created = makeCustomer();
 
     Customer updated = patchCustomer(
-        conn(),
+        guard(),
         created.id,
         std::nullopt,
         std::nullopt,
@@ -180,7 +166,7 @@ TEST_F(CustomerDbFixture, PatchCustomer_InvalidEmail_Throws)
 
     EXPECT_THROW(
         (void)patchCustomer(
-            conn(),
+            guard(),
             created.id,
             std::nullopt,
             std::nullopt,
@@ -197,7 +183,7 @@ TEST_F(CustomerDbFixture, PatchCustomer_NoFieldsProvided_Throws)
     Customer created = makeCustomer();
 
     EXPECT_THROW(
-        (void)patchCustomer(conn(), created.id, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt),
+        (void)patchCustomer(guard(), created.id, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt, std::nullopt),
         std::invalid_argument);
 }
 
@@ -209,7 +195,7 @@ TEST_F(CustomerDbFixture, PatchCustomer_UniquenessConflictOnEmail_ThrowsUniqueVi
     // Creates a second customer with unique email and licence
     std::string other_suffix = uniqueSuffix();
     Customer c2 = createCustomer(
-        conn(),
+        guard(),
         "Other",
         "Customer",
         "5192222222",
@@ -220,7 +206,7 @@ TEST_F(CustomerDbFixture, PatchCustomer_UniquenessConflictOnEmail_ThrowsUniqueVi
 
     EXPECT_THROW(
         (void)patchCustomer(
-            conn(),
+            guard(),
             c2.id,
             std::nullopt,
             std::nullopt,

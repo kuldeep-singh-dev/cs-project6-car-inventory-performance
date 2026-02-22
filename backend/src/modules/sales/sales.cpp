@@ -47,8 +47,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     .methods("GET"_method)
     ([]() {
 
-        auto conn = getDbConnection();
-        pqxx::work txn(*conn);
+        ConnectionGuard guard(getPool());
+        pqxx::work txn(guard.get());
 
         pqxx::result r = txn.exec(
             "SELECT s.id AS sale_id, s.date, s.sale_price, "
@@ -119,8 +119,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             const int MAX_WEEKS = 520;
             int weekCounter = 0;
 
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             std::ostringstream csv;
             csv << "week_start,week_end,total_sales_count,total_revenue,"
@@ -201,8 +201,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     .methods("GET"_method)
     ([]() {
         try {
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result r = txn.exec(
                 "SELECT "
@@ -294,8 +294,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
                 return crow::response(400, error);
             }
 
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result r = txn.exec_params(
                 "SELECT "
@@ -535,8 +535,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
                 return crow::response(400, error);
             }
 
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             // insert and return new sale
             pqxx::result r = txn.exec_params(
@@ -595,48 +595,31 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     CROW_ROUTE(app, "/sales/vehicles/<string>")
     .methods("GET"_method)
     ([](const std::string& vehicle_id) {
-
-        auto conn = getDbConnection();
-
-        // Prepared once per connection
-        static bool prepared = false;
-        if (!prepared) {
-            conn->prepare(
-                "get_sales_by_vehicle",
-                "SELECT s.id AS sale_id, s.date, s.sale_price, "
-                "v.id AS vehicle_id, v.make, v.model, "
-                "c.id AS customer_id, c.first_name, c.last_name "
-                "FROM Sales s "
-                "JOIN Vehicles v ON s.vehicle_id = v.id "
-                "JOIN Customers c ON s.customer_id = c.id "
-                "WHERE v.id = $1 "
-                "ORDER BY s.date DESC"
-            );
-            prepared = true;
-        }
-
-        pqxx::work txn(*conn);
-        pqxx::result r = txn.exec_prepared("get_sales_by_vehicle", vehicle_id);
-
-        // Explicit JSON array
+        ConnectionGuard guard(getPool());
+        pqxx::work txn(guard.get());
+        pqxx::result r = txn.exec_params(
+            "SELECT s.id AS sale_id, s.date, s.sale_price, "
+            "v.id AS vehicle_id, v.make, v.model, "
+            "c.id AS customer_id, c.first_name, c.last_name "
+            "FROM Sales s "
+            "JOIN Vehicles v ON s.vehicle_id = v.id "
+            "JOIN Customers c ON s.customer_id = c.id "
+            "WHERE v.id = $1 "
+            "ORDER BY s.date DESC",
+            vehicle_id
+        );
         crow::json::wvalue result = crow::json::wvalue::list();
         int i = 0;
-
         for (const auto& row : r) {
-            result[i]["sale_id"] = row["sale_id"].c_str();
-            result[i]["date"] = row["date"].c_str();
-            result[i]["price"] = row["sale_price"].as<double>();
-            result[i]["vehicle_id"] = row["vehicle_id"].c_str();
-            result[i]["vehicle"] =
-                std::string(row["make"].c_str()) + " " +
-                row["model"].c_str();
+            result[i]["sale_id"]     = row["sale_id"].c_str();
+            result[i]["date"]        = row["date"].c_str();
+            result[i]["price"]       = row["sale_price"].as<double>();
+            result[i]["vehicle_id"]  = row["vehicle_id"].c_str();
+            result[i]["vehicle"]     = std::string(row["make"].c_str()) + " " + row["model"].c_str();
             result[i]["customer_id"] = row["customer_id"].c_str();
-            result[i]["customer"] =
-                std::string(row["first_name"].c_str()) + " " +
-                row["last_name"].c_str();
+            result[i]["customer"]    = std::string(row["first_name"].c_str()) + " " + row["last_name"].c_str();
             ++i;
         }
-
         return result;
     });
 
@@ -646,48 +629,31 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     CROW_ROUTE(app, "/sales/customers/<string>")
     .methods("GET"_method)
     ([](const std::string& customer_id) {
-
-        auto conn = getDbConnection();
-
-        // Prepared once per connection
-        static bool prepared = false;
-        if (!prepared) {
-            conn->prepare(
-                "get_sales_by_customer",
-                "SELECT s.id AS sale_id, s.date, s.sale_price, "
-                "v.id AS vehicle_id, v.make, v.model, "
-                "c.id AS customer_id, c.first_name, c.last_name "
-                "FROM Sales s "
-                "JOIN Vehicles v ON s.vehicle_id = v.id "
-                "JOIN Customers c ON s.customer_id = c.id "
-                "WHERE c.id = $1 "
-                "ORDER BY s.date DESC"
-            );
-            prepared = true;
-        }
-
-        pqxx::work txn(*conn);
-        pqxx::result r = txn.exec_prepared("get_sales_by_customer", customer_id);
-
-        // Explicit JSON array
+        ConnectionGuard guard(getPool());
+        pqxx::work txn(guard.get());
+        pqxx::result r = txn.exec_params(
+            "SELECT s.id AS sale_id, s.date, s.sale_price, "
+            "v.id AS vehicle_id, v.make, v.model, "
+            "c.id AS customer_id, c.first_name, c.last_name "
+            "FROM Sales s "
+            "JOIN Vehicles v ON s.vehicle_id = v.id "
+            "JOIN Customers c ON s.customer_id = c.id "
+            "WHERE c.id = $1 "
+            "ORDER BY s.date DESC",
+            customer_id
+        );
         crow::json::wvalue result = crow::json::wvalue::list();
         int i = 0;
-
         for (const auto& row : r) {
-            result[i]["sale_id"] = row["sale_id"].c_str();
-            result[i]["date"] = row["date"].c_str();
-            result[i]["price"] = row["sale_price"].as<double>();
-            result[i]["vehicle_id"] = row["vehicle_id"].c_str();
-            result[i]["vehicle"] =
-                std::string(row["make"].c_str()) + " " +
-                row["model"].c_str();
+            result[i]["sale_id"]     = row["sale_id"].c_str();
+            result[i]["date"]        = row["date"].c_str();
+            result[i]["price"]       = row["sale_price"].as<double>();
+            result[i]["vehicle_id"]  = row["vehicle_id"].c_str();
+            result[i]["vehicle"]     = std::string(row["make"].c_str()) + " " + row["model"].c_str();
             result[i]["customer_id"] = row["customer_id"].c_str();
-            result[i]["customer"] =
-                std::string(row["first_name"].c_str()) + " " +
-                row["last_name"].c_str();
+            result[i]["customer"]    = std::string(row["first_name"].c_str()) + " " + row["last_name"].c_str();
             ++i;
         }
-
         return result;
     });
 
@@ -755,8 +721,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             // ----------------------------
             // Database update
             // ----------------------------
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result r;
 

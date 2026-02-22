@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../external/crow/crow_all.h"
+#include "../../db/db_connection.h"
 #include <pqxx/pqxx>
 
 #include <optional>
@@ -22,10 +23,10 @@ struct Customer
 void registerCustomerRoutes(crow::SimpleApp &app);
 
 // Helper Functions
-std::vector<Customer> getAllCustomers(pqxx::connection &conn);
-std::optional<Customer> getCustomerById(pqxx::connection &conn, const std::string &customer_id);
+std::vector<Customer> getAllCustomers(ConnectionGuard &guard);
+std::optional<Customer> getCustomerById(ConnectionGuard &guard, const std::string &customer_id);
 Customer createCustomer(
-    pqxx::connection &conn,
+    ConnectionGuard &guard,
     const std::string &first_name,
     const std::string &last_name,
     const std::string &ph_number,
@@ -34,7 +35,7 @@ Customer createCustomer(
     const std::optional<std::string> &address);
 
 Customer patchCustomer(
-    pqxx::connection &conn,
+    ConnectionGuard &guard,
     const std::string &customer_id,
     const std::optional<std::string> &first_name,
     const std::optional<std::string> &last_name,

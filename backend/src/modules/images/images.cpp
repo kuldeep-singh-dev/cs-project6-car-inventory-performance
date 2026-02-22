@@ -45,8 +45,8 @@ void registerImagesRoutes(crow::SimpleApp& app) {
             // Save to database
             std::string img_url = "/uploads/" + filename;
             
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
             
             pqxx::result r = txn.exec_params(
                 "INSERT INTO Images (vehicle_id, img_url) VALUES ($1, $2) RETURNING id",
@@ -75,8 +75,8 @@ void registerImagesRoutes(crow::SimpleApp& app) {
         .methods("GET"_method)
     ([](const std::string& vehicle_id) {
         try {
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
             
             pqxx::result r = txn.exec_params(
                 "SELECT id, vehicle_id, img_url FROM Images WHERE vehicle_id = $1 ORDER BY id",
@@ -106,8 +106,8 @@ void registerImagesRoutes(crow::SimpleApp& app) {
         .methods("DELETE"_method)
     ([](const std::string& image_id) {
         try {
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
             
             // Get the img_url before deleting
             pqxx::result r = txn.exec_params(

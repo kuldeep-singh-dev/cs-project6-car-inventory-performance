@@ -11,8 +11,8 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
     .methods(crow::HTTPMethod::GET)
     ([]() {
         try {
-            auto conn = getDbConnection();      
-            pqxx::work txn(*conn);              
+            ConnectionGuard guard(getPool());      
+            pqxx::work txn(guard.get());              
 
                 pqxx::result res = txn.exec(
                     "SELECT "
@@ -61,8 +61,8 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
     .methods(crow::HTTPMethod::GET)
     ([]() {
         try {
-            auto conn = getDbConnection();      
-            pqxx::work txn(*conn);              
+            ConnectionGuard guard(getPool());      
+            pqxx::work txn(guard.get());              
 
                 pqxx::result res = txn.exec(
                     "SELECT "
@@ -112,8 +112,8 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
     .methods(crow::HTTPMethod::GET)
     ([](std::string vehicleId) {
         try {
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result res = txn.exec_params(
                 "SELECT * FROM Vehicles WHERE id = $1",
@@ -153,8 +153,8 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
         if (!body) return crow::response(400, "Invalid JSON");
 
         try {
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             // Convert crow::json::r_string to std::string
             pqxx::row row = txn.exec_params(
@@ -190,8 +190,8 @@ void registerInventoryRoutes(crow::SimpleApp& app) {
         if (!body) return crow::response(400, "Invalid JSON");
 
         try {
-            auto conn = getDbConnection();   
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());   
+            pqxx::work txn(guard.get());
 
             pqxx::result res = txn.exec_params(
                 "UPDATE Vehicles SET vin=$1, make=$2, model=$3, year=$4, odometer=$5, "
