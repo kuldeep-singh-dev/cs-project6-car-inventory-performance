@@ -4,12 +4,14 @@
 #include <pqxx/pqxx>
 #include <memory>
 #include "../../external/crow/crow_all.h"
+#include "../../db/db_connection.h"
+
 using namespace std;
 class TestDriveService {
 private:
-	std::shared_ptr<pqxx::connection> conn;
+	ConnectionGuard& guard; 
 public:
-	TestDriveService(shared_ptr<pqxx::connection> connection);
+	TestDriveService(ConnectionGuard& g); 
 	crow::json::wvalue getAllTestDrives();
 	crow::json::wvalue addTestDrive(const TestDrive& testDrive);
 	crow::json::wvalue updateTestDrive(const TestDrive& testDrive);

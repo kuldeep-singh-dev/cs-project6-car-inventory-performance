@@ -52,13 +52,25 @@ services:
       POSTGRES_DB: dealerdrive
       POSTGRES_USER: dealerdrive
       POSTGRES_PASSWORD: dealerdrive
+      POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - vehicle-images:/shareddocker/uploads
+    shm_size: '512mb'
     ports:
       - "5432:5432"
     restart: unless-stopped
     networks:
       - dealerdrive-network
+    command: >
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c work_mem=16MB
+      -c maintenance_work_mem=128MB
+      -c max_connections=200
+      -c checkpoint_completion_target=0.9
+      -c wal_buffers=16MB
+      -c random_page_cost=1.1
 
   backend:
     build:

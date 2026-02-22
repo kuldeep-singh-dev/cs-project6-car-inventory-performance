@@ -61,6 +61,19 @@ CREATE TABLE Test_Drive_Record (
 );
 
 -- =========================================================
+-- INDEXES
+-- =========================================================
+CREATE INDEX idx_vehicles_status ON vehicles(status);
+CREATE INDEX idx_vehicles_make ON vehicles(make);
+CREATE INDEX idx_vehicles_year ON vehicles(year);
+CREATE INDEX idx_vehicles_make_model ON vehicles(make, model);
+CREATE INDEX idx_sales_customer_id ON sales(customer_id);
+CREATE INDEX idx_sales_date ON sales(date);
+CREATE INDEX idx_images_vehicle_id ON images(vehicle_id);
+CREATE INDEX idx_test_drive_vehicle_id ON test_drive_record(vehicle_id);
+CREATE INDEX idx_test_drive_customer_id ON test_drive_record(customer_id);
+
+-- =========================================================
 -- CLEAN EXISTING DATA (SAFE)
 -- =========================================================
 TRUNCATE TABLE

@@ -71,29 +71,28 @@ public:
 
 class ImagesTest : public ::testing::Test {
 protected:
-    std::shared_ptr<pqxx::connection> conn;
+    std::unique_ptr<ConnectionGuard> guard_;
     std::string test_vehicle_id;
     std::string test_image_id;
 
+    pqxx::connection& conn() { return guard_->get(); }
+
     void SetUp() override {
-        conn = getDbConnection();
-        ASSERT_NE(conn, nullptr);
-        ASSERT_TRUE(conn->is_open());
-        
-        test_vehicle_id = ImagesTestHelper::createTestVehicle(*conn);
+        guard_ = std::make_unique<ConnectionGuard>(getPool());
+        ASSERT_TRUE(guard_->get().is_open());
+
+        test_vehicle_id = ImagesTestHelper::createTestVehicle(conn());
     }
 
     void TearDown() override {
         try {
-            if (!test_image_id.empty()) {
-                ImagesTestHelper::deleteTestImage(*conn, test_image_id);
-            }
-            if (!test_vehicle_id.empty()) {
-                ImagesTestHelper::deleteTestVehicle(*conn, test_vehicle_id);
-            }
-        } catch (...) {
-            // Ignore cleanup errors
-        }
+            if (!test_image_id.empty())
+                ImagesTestHelper::deleteTestImage(conn(), test_image_id);
+            if (!test_vehicle_id.empty())
+                ImagesTestHelper::deleteTestVehicle(conn(), test_vehicle_id);
+        } catch (...) {}
+
+        guard_.reset(); // return to pool
     }
 };
 
@@ -102,9 +101,8 @@ protected:
 // ========================================
 
 TEST(DatabaseTest, CanConnectToDatabase) {
-    auto conn = getDbConnection();
-    ASSERT_NE(conn, nullptr);
-    EXPECT_TRUE(conn->is_open());
+    ConnectionGuard guard(getPool());
+    EXPECT_TRUE(guard.get().is_open());
 }
 
 // ========================================
@@ -112,7 +110,7 @@ TEST(DatabaseTest, CanConnectToDatabase) {
 // ========================================
 
 TEST_F(ImagesTest, CreateImage_Success) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     std::string img_url = "https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800";
     
@@ -133,7 +131,7 @@ TEST_F(ImagesTest, CreateImage_Success) {
 }
 
 TEST_F(ImagesTest, CreateImage_LocalUpload) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     std::string img_url = "/uploads/" + test_vehicle_id + "_1234567890.jpg";
     
@@ -153,7 +151,7 @@ TEST_F(ImagesTest, CreateImage_LocalUpload) {
 }
 
 TEST_F(ImagesTest, CreateImage_InvalidVehicleId) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     EXPECT_THROW({
         txn.exec_params(
@@ -165,7 +163,7 @@ TEST_F(ImagesTest, CreateImage_InvalidVehicleId) {
 }
 
 TEST_F(ImagesTest, CreateImage_MultipleImagesForOneVehicle) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r1 = txn.exec_params(
         "INSERT INTO Images (vehicle_id, img_url) "
@@ -186,8 +184,8 @@ TEST_F(ImagesTest, CreateImage_MultipleImagesForOneVehicle) {
     EXPECT_NE(r1[0]["id"].c_str(), r2[0]["id"].c_str());
     
     // Cleanup both images
-    ImagesTestHelper::deleteTestImage(*conn, r1[0]["id"].c_str());
-    ImagesTestHelper::deleteTestImage(*conn, r2[0]["id"].c_str());
+    ImagesTestHelper::deleteTestImage(conn(), r1[0]["id"].c_str());
+    ImagesTestHelper::deleteTestImage(conn(), r2[0]["id"].c_str());
 }
 
 // ========================================
@@ -195,9 +193,9 @@ TEST_F(ImagesTest, CreateImage_MultipleImagesForOneVehicle) {
 // ========================================
 
 TEST_F(ImagesTest, GetImagesByVehicle_HasImages) {
-    test_image_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    test_image_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT id, vehicle_id, img_url FROM Images WHERE vehicle_id = $1 ORDER BY id",
@@ -218,7 +216,7 @@ TEST_F(ImagesTest, GetImagesByVehicle_HasImages) {
 }
 
 TEST_F(ImagesTest, GetImagesByVehicle_NoImages) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT id FROM Images WHERE vehicle_id = $1",
@@ -229,11 +227,11 @@ TEST_F(ImagesTest, GetImagesByVehicle_NoImages) {
 }
 
 TEST_F(ImagesTest, GetImagesByVehicle_MultipleImages) {
-    auto img1_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id, "https://example.com/img1.jpg");
-    auto img2_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id, "https://example.com/img2.jpg");
-    auto img3_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id, "https://example.com/img3.jpg");
+    auto img1_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id, "https://example.com/img1.jpg");
+    auto img2_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id, "https://example.com/img2.jpg");
+    auto img3_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id, "https://example.com/img3.jpg");
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT id, img_url FROM Images WHERE vehicle_id = $1 ORDER BY id",
@@ -245,9 +243,9 @@ TEST_F(ImagesTest, GetImagesByVehicle_MultipleImages) {
     EXPECT_EQ(r.size(), 3);
     
     // Cleanup
-    ImagesTestHelper::deleteTestImage(*conn, img1_id);
-    ImagesTestHelper::deleteTestImage(*conn, img2_id);
-    ImagesTestHelper::deleteTestImage(*conn, img3_id);
+    ImagesTestHelper::deleteTestImage(conn(), img1_id);
+    ImagesTestHelper::deleteTestImage(conn(), img2_id);
+    ImagesTestHelper::deleteTestImage(conn(), img3_id);
 }
 
 // ========================================
@@ -255,9 +253,9 @@ TEST_F(ImagesTest, GetImagesByVehicle_MultipleImages) {
 // ========================================
 
 TEST_F(ImagesTest, DeleteImage_Success) {
-    test_image_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    test_image_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "DELETE FROM Images WHERE id = $1 RETURNING id",
@@ -270,7 +268,7 @@ TEST_F(ImagesTest, DeleteImage_Success) {
     EXPECT_EQ(r[0]["id"].c_str(), test_image_id);
     
     // Verify deletion
-    pqxx::work verify_txn(*conn);
+    pqxx::work verify_txn(conn());
     pqxx::result verify = verify_txn.exec_params(
         "SELECT id FROM Images WHERE id = $1",
         test_image_id
@@ -282,7 +280,7 @@ TEST_F(ImagesTest, DeleteImage_Success) {
 }
 
 TEST_F(ImagesTest, DeleteImage_InvalidId) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "DELETE FROM Images WHERE id = $1 RETURNING id",
@@ -293,15 +291,15 @@ TEST_F(ImagesTest, DeleteImage_InvalidId) {
 }
 
 TEST_F(ImagesTest, DeleteImage_CascadeOnVehicleDelete) {
-    test_image_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    test_image_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
     // Delete the vehicle (should cascade to images)
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     txn.exec_params("DELETE FROM Vehicles WHERE id = $1", test_vehicle_id);
     txn.commit();
     
     // Verify image was also deleted
-    pqxx::work verify_txn(*conn);
+    pqxx::work verify_txn(conn());
     pqxx::result r = verify_txn.exec_params(
         "SELECT id FROM Images WHERE id = $1",
         test_image_id
@@ -365,7 +363,7 @@ TEST_F(ImagesTest, URLFormat_LongURL) {
     std::string long_url(500, 'a');
     long_url = "https://example.com/" + long_url + ".jpg";
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "INSERT INTO Images (vehicle_id, img_url) VALUES ($1, $2) RETURNING id",
@@ -384,7 +382,7 @@ TEST_F(ImagesTest, URLFormat_LongURL) {
 // ========================================
 
 TEST_F(ImagesTest, EdgeCase_EmptyURLString) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     // PostgreSQL should reject empty string due to NOT NULL
     pqxx::result r = txn.exec_params(
@@ -403,7 +401,7 @@ TEST_F(ImagesTest, EdgeCase_EmptyURLString) {
 TEST_F(ImagesTest, EdgeCase_SpecialCharactersInURL) {
     std::string url = "https://example.com/image%20with%20spaces.jpg?param=value&other=123";
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "INSERT INTO Images (vehicle_id, img_url) VALUES ($1, $2) RETURNING id, img_url",  // ← Added 'id'
@@ -422,14 +420,14 @@ TEST_F(ImagesTest, EdgeCase_SpecialCharactersInURL) {
 // ========================================
 
 TEST_F(ImagesTest, Validation_UUIDLength) {
-    test_image_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    test_image_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
     EXPECT_EQ(test_image_id.length(), 36);
     EXPECT_EQ(test_vehicle_id.length(), 36);
 }
 
 TEST_F(ImagesTest, Validation_UUIDFormat) {
-    test_image_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    test_image_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
     // UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     EXPECT_EQ(test_image_id[8], '-');
@@ -444,12 +442,12 @@ TEST_F(ImagesTest, Validation_UUIDFormat) {
 
 TEST_F(ImagesTest, CountImages_PerVehicle) {
     // Create images first (these have their own transactions)
-    auto img1 = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
-    auto img2 = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
-    auto img3 = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    auto img1 = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
+    auto img2 = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
+    auto img3 = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
     // Then start transaction for counting
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT COUNT(*) as count FROM Images WHERE vehicle_id = $1",
@@ -461,23 +459,23 @@ TEST_F(ImagesTest, CountImages_PerVehicle) {
     EXPECT_EQ(r[0]["count"].as<int>(), 3);
     
     // Cleanup
-    ImagesTestHelper::deleteTestImage(*conn, img1);
-    ImagesTestHelper::deleteTestImage(*conn, img2);
-    ImagesTestHelper::deleteTestImage(*conn, img3);
+    ImagesTestHelper::deleteTestImage(conn(), img1);
+    ImagesTestHelper::deleteTestImage(conn(), img2);
+    ImagesTestHelper::deleteTestImage(conn(), img3);
 }
 
 TEST_F(ImagesTest, GetTotalImageCount) {
     // Get initial count
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     pqxx::result r = txn.exec("SELECT COUNT(*) as total FROM Images");
     int initial_count = r[0]["total"].as<int>();
     txn.commit(); // Commit transaction before creating new image
     
     // Create new image (has its own transaction)
-    test_image_id = ImagesTestHelper::createTestImage(*conn, test_vehicle_id);
+    test_image_id = ImagesTestHelper::createTestImage(conn(), test_vehicle_id);
     
     // Get new count
-    pqxx::work txn2(*conn);
+    pqxx::work txn2(conn());
     pqxx::result r2 = txn2.exec("SELECT COUNT(*) as total FROM Images");
     txn2.commit();
     
