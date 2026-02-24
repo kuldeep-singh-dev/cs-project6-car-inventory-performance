@@ -1,0 +1,59 @@
+.addTDPage {
+  padding: 32px;
+  text-align: left;
+}
+
+.addTDTitle {
+  margin-bottom: 24px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.addTDForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 400px;
+}
+
+.addTDLabel {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.addTDSelect,
+.addTDInput,
+.addTDTextarea {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+}
+
+.addTDTextarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.addTDSaveBtn {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid #1976d2;
+  background: #2196f3;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 8px;
+}
+
+.addTDSaveBtn:hover {
+  background: #1976d2;
+}
+.tdError {
+  background: #ffe5e5;
+  color: #b30000;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #ffb3b3;
+}

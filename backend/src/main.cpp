@@ -4,6 +4,7 @@
 #include "modules/test_drive/test_drive_routes.h"
 #include "modules/inventory/inventory.h"
 #include "modules/customer/customer.h"
+#include "modules/images/images.h"
 
     int
     main()
@@ -22,6 +23,9 @@
 	
    // Register routes from the test drive module
 	registerTestDriveRoutes(app);
+
+    // Register routes from the images module
+	registerImagesRoutes(app);
 
 	// Start the server on port 3000
     app.port(3000).multithreaded().run();

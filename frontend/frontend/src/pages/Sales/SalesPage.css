@@ -1,0 +1,107 @@
+ .salesPage{
+  /* Use viewport height so the table scroll stays inside this page */
+  height: 100vh;
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.salesTopBar{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.salesLeftActions{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.weeklyBox{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.weeklyInputs{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.salesHeader{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.salesTitle{
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.salesTableWrap{
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--panel);
+}
+
+.salesTable{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 720px;
+}
+
+.salesTable thead th{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  text-align: left;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted);
+  font-weight: 900;
+  font-size: .82rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+}
+
+.salesTable tbody td{
+  padding: 14px;
+  border-bottom: 1px solid rgba(15,23,42,.08);
+  color: var(--text);
+}
+
+.salesRow:hover{
+  background: rgba(37,99,235,.05);
+}
+
+.salesEmpty{
+  text-align: center;
+  padding: 28px !important;
+  color: var(--muted);
+}
+
+.salesState{ padding: 16px; }
+
+.salesError{ color: var(--danger); }
+
+@media (max-width: 900px){
+  .salesPage{ padding: 14px; }
+}

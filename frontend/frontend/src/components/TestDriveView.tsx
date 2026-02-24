@@ -1,7 +1,7 @@
-import type { TestDrive } from "../types/testDrive";
+import type { TestDriveRev } from "../types/testDrive";
 
 interface Props {
-  testDrive: TestDrive;
+  testDrive: TestDriveRev;
 }
 
 const boxStyle: React.CSSProperties = {
@@ -10,10 +10,9 @@ const boxStyle: React.CSSProperties = {
   padding: "12px 16px",
   minWidth: "350px",
 };
-
 const TestDriveView = ({ testDrive }: Props) => {
-  const customer = testDrive.customer;
-  const vehicle = testDrive.vehicle;
+  //const customer = testDrive.fi;
+  //const vehicle = testDrive.vehicle_id;
 
   return (
     <div
@@ -49,27 +48,22 @@ const TestDriveView = ({ testDrive }: Props) => {
       >
         <div style={boxStyle}>
           <strong>Customer Name: </strong>
-            {customer
-              ? `${customer.firstName} ${customer.lastName}`
-              : "-"}
+          {testDrive.firstName && testDrive.lastName
+            ? `${testDrive.firstName} ${testDrive.lastName}`
+          : "-"}
         </div>
-
-        <div style={boxStyle}>
-          <strong>License Number: </strong>{customer?.driverLicenseNumber ?? "-"}
-        </div>
-
         <div style={boxStyle}>
           <strong>Vehicle: </strong>
-            {vehicle ? `${vehicle.make} ${vehicle.model}` : "-"}
+            {`${testDrive.make} ${testDrive.model}`}
         </div>
 
         <div style={boxStyle}>
           <strong>Test Drive Date: </strong>
-            {new Date(testDrive.testDriveDate).toLocaleString()}
+            {new Date(testDrive.date).toLocaleString()}
         </div>
 
         <div style={boxStyle}>
-          <strong>Notes: </strong>{testDrive.notes ?? "-"}
+          <strong>Notes: </strong>{testDrive.comment ?? "-"}
         </div>
       </div>
     </div>

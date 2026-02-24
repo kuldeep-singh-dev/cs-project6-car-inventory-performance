@@ -12,6 +12,7 @@ export interface Vehicle {
   trim?: string;
   market_price: number;
   status: VehicleStatus;
+  first_image?: string;
 }
 export type CreateVehiclePayload = Omit<Vehicle, "id">;
 

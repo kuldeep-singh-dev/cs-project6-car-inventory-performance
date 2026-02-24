@@ -1,23 +1,54 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import "./Sidebar.css";
 
-const Sidebar=()=>{
-    return (
-        <aside style={{width:"200px", padding: "1rem", borderRight: "1px solid #ddd"}}>
-            <h3>DealerDocs</h3>
-            <nav>
-                <ul>
-                    <li><Link to="/dashboard">Dashboard</Link></li>
-                    <li><Link to="/vehicles">Vehicles</Link></li>
-                    <li><Link to="/customers">Customers</Link></li>
-                    <li><Link to="/sales">Sales</Link></li>
-                    <li><Link to="/records">Records</Link></li>
-                    <li><Link to="/documents">Documents</Link></li>
-                    <li><Link to="/settings">Settings</Link></li>
-                    
-                </ul>
-            </nav>
-        </aside>
-    );
+type SidebarProps = {
+  variant?: "desktop" | "mobile";
+  onNavigate?: () => void;
+};
+
+const navItems = [
+  { to: "/dashboard", label: "Dashboard", icon: "🏠" },
+  { to: "/vehicles", label: "Vehicles", icon: "🚗" },
+  { to: "/sales", label: "Sales", icon: "🧾" },
+  { to: "/testdrive", label: "Test Drive", icon: "🛣️" },
+  { to: "/customers", label: "Customers", icon: "👤" },
+];
+
+const Sidebar = ({ variant = "desktop", onNavigate }: SidebarProps) => {
+  return (
+    <aside className={variant === "desktop" ? "sidebar desktop" : "sidebar mobile"}>
+      <div className="sideBrand">
+        <div className="sideMark" />
+        <div className="sideText">
+          <strong>DealerDocs</strong>
+          <span>Car inventory dashboard</span>
+        </div>
+      </div>
+
+      <nav className="sideNav">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            onClick={onNavigate}
+            className={({ isActive }) => (isActive ? "sideLink active" : "sideLink")}
+          >
+            <span className="sideIcon" aria-hidden="true">
+              {item.icon}
+            </span>
+            <span>{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sideFooter">
+        <div className="sideHint">
+          <div className="dot" />
+          <span className="muted">Tip: use the search bar to find by VIN.</span>
+        </div>
+      </div>
+    </aside>
+  );
 };
 
 export default Sidebar;

@@ -166,7 +166,7 @@ void TestDriveController::getTestDriveByCustomerId(crow::response& res, string c
 }
 void TestDriveController::getTestDriveByVehicleId(crow::response& res, string vehicleId) {
 	crow::json::wvalue result;
-	res.add_header("Content-Type", "application/json");
+	res.set_header("Content-Type", "application/json");
 	try {
 		if (vehicleId.length() != 36) {
 			res.code = 400;
@@ -182,7 +182,6 @@ void TestDriveController::getTestDriveByVehicleId(crow::response& res, string ve
 			res.end(result.dump());
 			return;
 		}
-		res.set_header("Content-Type", "application/json");
 		res.write(testDrive.dump());
 		res.end();
 	}
@@ -191,4 +190,41 @@ void TestDriveController::getTestDriveByVehicleId(crow::response& res, string ve
 		result["error"] = "Internal Server Error: " + string(e.what());
 		res.end(result.dump());
 	}
+	
+}
+void TestDriveController::getTestDriveById(crow::response& res, string testId) {
+	crow::json::wvalue result;
+	res.set_header("Content-Type", "application/json");
+	try {
+		if (testId.length() != 36) {
+			res.code = 400;
+			result["error"] = "Invalid UUID format";
+			res.end(result.dump());
+			return;
+		}
+		//get test drive by vehicle id
+		crow::json::wvalue testDrive = testDriveService.getTestDriveByTestId(testId);
+		if (testDrive.size() == 0) {
+			res.code = 404;
+			result["error"] = "No test drive found for the given test ID.";
+			res.end(result.dump());
+			return;
+		}
+		res.write(testDrive.dump());
+		res.end();
+	}
+	catch (const std::exception& e) {
+		res.code = 500;
+		result["error"] = "Internal Server Error: " + string(e.what());
+		res.end(result.dump());
+	}
+
+}
+void TestDriveController::getExportCsV(crow::response& res) {
+	auto csv = testDriveService.getAllTestDrivesCSV();
+	res.set_header("Content-Type", "text/csv");
+	res.set_header("Content-Disposition", "attachment; filename=\"testdrives.csv\"");
+	res.code = 200;
+	res.write(csv);
+	res.end();
 }

@@ -1,0 +1,38 @@
+ .tdPage{
+  height: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tdHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tdHeaderActions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tdTitle{
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.tdActions{
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tdNoResults{
+  padding: 16px;
+  color: var(--muted);
+}

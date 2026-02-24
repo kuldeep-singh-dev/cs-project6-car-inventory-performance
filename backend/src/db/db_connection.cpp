@@ -1,24 +1,26 @@
 #include "db_connection.h"
 #include <iostream>
+#include <memory>
+#include <pqxx/pqxx>
 
 std::shared_ptr<pqxx::connection> getDbConnection() {
-    static std::shared_ptr<pqxx::connection> conn = nullptr;
+    try {
+        thread_local std::shared_ptr<pqxx::connection> conn =
+        std::make_shared<pqxx::connection>(
+            "host=db "
+            "port=5432 "
+            "dbname=dealerdrive "
+            "user=dealerdrive "
+            "password=dealerdrive"
+        );
 
-    if (!conn || !conn->is_open()) {
-        try {
-            conn = std::make_shared<pqxx::connection>(
-                "host=db "
-                "port=5432 "
-                "dbname=dealerdrive "
-                "user=dealerdrive "
-                "password=dealerdrive"
-            );
-
-            std::cout << "DB connected successfully\n";
-        } catch (const std::exception& e) {
-            std::cerr << "DB connection failed: " << e.what() << std::endl;
-            throw;
+        if (!conn->is_open()) {
+            throw std::runtime_error("Database connection is not open");
         }
+
+        return conn;
+    } catch (const std::exception& e) {
+        std::cerr << "DB connection failed: " << e.what() << std::endl;
+        throw;
     }
-    return conn;
 }

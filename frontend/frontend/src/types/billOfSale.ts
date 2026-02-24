@@ -2,6 +2,6 @@ export interface BillOfSale {
   id: string;
   vehicle_id: string;
   customer_id: string;
-  date: string;        // ISO date
+  date: string;
   sale_price: number;
 }

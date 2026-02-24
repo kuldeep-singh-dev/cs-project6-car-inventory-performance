@@ -1,3 +1,47 @@
+# version: "3.9"
+
+# services:
+#   db:
+#     image: postgres:15
+#     container_name: dealerdrive-db
+#     environment:
+#       POSTGRES_DB: dealerdrive
+#       POSTGRES_USER: dealerdrive
+#       POSTGRES_PASSWORD: dealerdrive
+#     volumes:
+#       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+#     ports:
+#       - "5432:5432"
+#     restart: unless-stopped
+
+#   backend:
+#     build:
+#       context: ..
+#       dockerfile: docker/Dockerfile
+#     container_name: dealerdrive-backend
+#     depends_on:
+#       - db
+#     volumes:
+#       - ../backend:/shareddocker
+#     ports:
+#       - "3000:3000"
+#     stdin_open: true
+#     tty: true
+
+#   frontend:
+#     image: node:20-alpine
+#     container_name: dealerdrive-frontend
+#     working_dir: /app
+#     volumes:
+#       - ../frontend/frontend:/app
+#       - /app/node_modules
+#     ports:
+#       - "5173:5173"  
+#     command: sh -c "npm install && npm run dev -- --host"
+#     depends_on:
+#       - backend
+
+
 version: "3.9"
 
 services:
@@ -13,6 +57,8 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    networks:
+      - dealerdrive-network
 
   backend:
     build:
@@ -23,10 +69,13 @@ services:
       - db
     volumes:
       - ../backend:/shareddocker
+      - vehicle-images:/shareddocker/uploads
     ports:
       - "3000:3000"
     stdin_open: true
     tty: true
+    networks:
+      - dealerdrive-network
 
   frontend:
     image: node:20-alpine
@@ -34,9 +83,19 @@ services:
     working_dir: /app
     volumes:
       - ../frontend/frontend:/app
-      - /node_modules
+      - /app/node_modules    
     ports:
-      - "5173:5173"  
-    command: sh -c "npm install && npm run dev"
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev" 
     depends_on:
       - backend
+    networks:
+      - dealerdrive-network
+
+# Define the shared network
+networks:
+  dealerdrive-network:
+    driver: bridge
+
+volumes:
+  vehicle-images: 

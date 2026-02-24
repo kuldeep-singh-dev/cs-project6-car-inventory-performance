@@ -12,4 +12,6 @@ public:
 	void updateTestDrive(const crow::request& req, crow::response& res, string testDriveId);
 	void getTestDriveByCustomerId(crow::response& res, string customerId);
 	void getTestDriveByVehicleId(crow::response& res, string vehicleId);
+	void getTestDriveById(crow::response& res, string testId);
+	void getExportCsV(crow::response& res);
 };

@@ -1,0 +1,102 @@
+.addSalePage {
+  height: 100%;
+  width: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.addSaleTitle {
+  margin: 0;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.addSaleError {
+  padding: 12px 14px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 12px;
+  color: #ef4444;
+}
+
+.addSaleGrid {
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 18px;
+}
+
+.addSaleField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addSaleField label {
+  font-weight: 600;
+}
+
+.addSaleField select,
+.addSaleField input {
+  height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 120, 120, 0.35);
+  box-sizing: border-box;
+}
+
+.addSaleWide {
+  grid-column: 1 / -1;
+}
+
+.addSaleActions {
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.btnPrimary {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 120, 120, 0.35);
+  cursor: pointer;
+}
+
+.btnGhost {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 120, 120, 0.35);
+  cursor: pointer;
+}
+
+.hint {
+  opacity: 0.8;
+}
+
+.addSaleState {
+  padding: 16px;
+}
+
+@media (max-width: 900px) {
+  .addSalePage {
+    padding: 16px;
+  }
+
+  .addSaleGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* Ensure dropdown items are readable */
+.addSaleField select{ background: var(--panel); color: var(--text); }
+.addSaleField select option{ color: var(--text); background: var(--panel); }

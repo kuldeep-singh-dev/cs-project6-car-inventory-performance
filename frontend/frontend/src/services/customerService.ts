@@ -1,22 +1,25 @@
-// import api from "../services/api";
-// import type { Customer, CustomerCreate, CustomerUpdate } from "../types/customer";
+import api from "./api";
+import type { Customer, CustomerCreate, CustomerUpdate } from "../types/customer";
 
-// export function getCustomers(): Promise<Customer[]> {
-//   return api.get<Customer[]>("/customers");
-// }
+export const customerService = {
+  getAll: async (): Promise<Customer[]> => {
+    const res = await api.get<Customer[]>("/customers");
+    return res.data;
+  },
 
-// export function getCustomerById(id: string): Promise<Customer> {
-//   return api.get<Customer>(`/customers/${encodeURIComponent(id)}`);
-// }
+  getById: async (id: string): Promise<Customer> => {
+    const res = await api.get<Customer>(`/customers/${id}`);
+    return res.data;
+  },
 
-// export function createCustomer(payload: CustomerCreate): Promise<Customer> {
-//   return api.post<Customer>("/customers", {
-//     body: JSON.stringify(payload),
-//   });
-// }
-    
-// export function patchCustomer(id: string, payload: CustomerUpdate): Promise<Customer> {
-//   return api.patch<Customer>(`/customers/${encodeURIComponent(id)}`, {
-//     body: JSON.stringify(payload),
-//   });
-// }
+  create: async (payload: CustomerCreate): Promise<Customer> => {
+    const res = await api.post<Customer>("/customers", payload);
+    return res.data;
+  },
+
+  patch: async (id: string, payload: CustomerUpdate): Promise<Customer> => {
+    const res = await api.patch<Customer>(`/customers/${id}`, payload);
+    return res.data;
+  },
+};
+

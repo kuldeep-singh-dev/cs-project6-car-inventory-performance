@@ -1,21 +1,54 @@
-.vehicleCard {
-  width: 300px;
+ .vehicleCard{
+  width: 100%;
+  max-width: 320px;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  transition: transform .08s ease, box-shadow .12s ease;
 }
 
-.vehicleCardImage {
-  width: 300px;
-  height: 200px;
-  border: 1px solid #ddd;
+.vehicleCard:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(2,6,23,.10);
+}
+
+.vehicleCardImage{
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, rgba(37,99,235,.08), rgba(6,182,212,.05));
 }
 
-.vehicleCardContent {
-  padding: 8px;
+.vehicleCardContent{
+  padding: 12px 12px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.vehicleTitle {
-  margin: 0 0 6px 0;
+.vehicleTitle{
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 900;
 }
+
+.vehicleMeta{
+  color: var(--muted);
+  font-size: .9rem;
+}
+
+.vehicleBadgeRow{
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.vehicleCardContent p{ margin:0; color: var(--muted); font-size: .92rem; }

@@ -1,44 +1,55 @@
-import api from "../services/api";
-import type { TestDrive } from "../types/testDrive";
-import type { Customer } from "../types/customer";
-import type { Vehicle } from "../types/vehicle";
+import api from "./api";
+import type { TestDriveRev, TestDriveSend, TestDrivePost, TestDrivePatch} from "../types/testDrive";
 
 export const testDriveService = {
-  getAll: async (): Promise<TestDrive[]> => {
-    const res = await api.get<TestDrive[]>("/test-drives");
+  getAll: async (): Promise<TestDriveRev[]> => {
+    const res = await api.get<TestDriveRev[]>("/testdrive");
     return res.data;
   },
 
-  getById: async (id: string): Promise<TestDrive> => {
-    const res = await api.get<TestDrive>(`/test-drives/${id}`);
+  getById: async (id: string): Promise<TestDriveRev> => {
+    const res = await api.get<TestDriveRev>(`/testdrive/${id}`);
     return res.data;
   },
 
-  create: async (data: Omit<TestDrive, "id">): Promise<TestDrive> => {
-    const res = await api.post<TestDrive>("/test-drives", data);
+  create: async (data: TestDrivePost): Promise<TestDriveRev> => {
+  try {
+    const res = await api.post<TestDriveRev>("/testdrive/post", data);
     return res.data;
-  },
+  } catch (err: any) {
+    // Extract backend message if it exists
+    const message =
+      err.response?.data?.error ||
+      err.response?.data?.message ||
+      (typeof err.response?.data === "string" ? err.response.data : null) ||
+      err.message ||
+      "Failed to create test drive.";
+    throw new Error(message);
+  }
+},
+
 
   update: async (
     id: string,
-    data: Partial<TestDrive>
-  ): Promise<TestDrive> => {
-    const res = await api.patch<TestDrive>(`/test-drives/${id}`, data);
+    data: TestDrivePatch
+  ): Promise<TestDriveSend> => {
+    const res = await api.patch<TestDriveSend>(`/testdrive/${id}`, data);
     return res.data;
   },
 
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/test-drives/${id}`);
+  getCsvReport: async (): Promise<Blob> => {
+    const res = await api.get(`/testdrive/export}`, { responseType: "blob" });
+    return res.data
   },
 
   // helper endpoints (as per SDD)
-  getCustomers: async (): Promise<Customer[]> => {
-    const res = await api.get<Customer[]>("/customers");
-    return res.data;
-  },
+  getByCustomerId: async (id: string): Promise<TestDriveRev[]> => {
+  const res = await api.get<TestDriveRev[]>(`/testdrive/customer/${id}`);
+  return res.data;
+},
 
-  getVehicles: async (): Promise<Vehicle[]> => {
-    const res = await api.get<Vehicle[]>("/vehicles");
-    return res.data;
-  },
+getByVehicleId: async (id: string): Promise<TestDriveRev[]> => {
+  const res = await api.get<TestDriveRev[]>(`/testdrive/vehicle/${id}`);
+  return res.data;
+},
 };

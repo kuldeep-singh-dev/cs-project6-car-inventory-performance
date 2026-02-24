@@ -72,7 +72,7 @@ TRUNCATE TABLE
 CASCADE;
 
 -- =========================================================
--- SEED VEHICLES (600)
+-- SEED VEHICLES (5000)
 -- =========================================================
 INSERT INTO Vehicles (vin, make, model, year, odometer, fuel_type, transmission, trim, market_price, status)
 SELECT
@@ -90,7 +90,7 @@ SELECT
     END,
     15000 + floor(random() * 45000)::numeric(10,2),
     CASE WHEN random() > 0.7 THEN 'Sold' ELSE 'Available' END::status_enum
-FROM generate_series(1,600),
+FROM generate_series(1,5000),
      (SELECT ARRAY['Toyota','Honda','Ford','Chevrolet','Nissan','Hyundai','Kia','Mazda','Subaru','Volkswagen'] AS makes) m,
      (SELECT ARRAY['Camry','Civic','Accord','CR-V','F-150','Escape','RAV4','Corolla','CX-5','Outback'] AS models) mo,
      (SELECT ARRAY['Gasoline','Diesel','Electric','Hybrid'] AS fuel_types) f,
@@ -98,7 +98,7 @@ FROM generate_series(1,600),
      (SELECT ARRAY['Base','SE','XLE','Sport','Limited'] AS trims) tr;
 
 -- =========================================================
--- SEED CUSTOMERS (600)
+-- SEED CUSTOMERS (5000)
 -- =========================================================
 INSERT INTO Customers (first_name, last_name, ph_number, email, driving_licence)
 SELECT
@@ -108,15 +108,12 @@ SELECT
     lower(first_names[1 + floor(random() * array_length(first_names, 1))::int]) || '.' ||
     lower(last_names[1 + floor(random() * array_length(last_names, 1))::int]) || gs || '@gmail.com',
     'ON-' || LPAD(gs::text, 8, '0')
-FROM generate_series(1,600) gs,
+FROM generate_series(1,5000) gs,
      (SELECT ARRAY['John','Jane','Alex','Emily','Chris','Sarah','Michael','Emma'] AS first_names) fn,
      (SELECT ARRAY['Smith','Brown','Singh','Patel','Khan','Wong','Chen','Lee'] AS last_names) ln;
 
 -- =========================================================
--- SEED SALES (150)
--- =========================================================
--- =========================================================
--- SEED SALES (150) - ONE CUSTOMER = ONE VEHICLE
+-- SEED SALES (2000) - ONE CUSTOMER = ONE VEHICLE
 -- =========================================================
 WITH sold_vehicles AS (
     SELECT id, market_price, 
@@ -137,10 +134,10 @@ SELECT
     sv.market_price * (0.9 + random()*0.15)
 FROM sold_vehicles sv
 JOIN random_customers rc ON sv.rn = rc.rn
-LIMIT 150;
+LIMIT 2000;
 
 -- =========================================================
--- SEED TEST DRIVES (120)
+-- SEED TEST DRIVES (5000)
 -- =========================================================
 INSERT INTO Test_Drive_Record (vehicle_id, customer_id, date, comments)
 SELECT
@@ -149,9 +146,58 @@ SELECT
     CURRENT_DATE - (random()*365)::int,
     'Customer liked the drive.'
 FROM Vehicles v
-JOIN Customers c ON random() < 0.2
+JOIN Customers c ON random() < 0.5
 WHERE v.status = 'Available'
-LIMIT 120;
+LIMIT 5000;
+
+-- =========================================================
+-- SEED IMAGES (30000) - 6 images per vehicle
+-- =========================================================
+INSERT INTO Images (vehicle_id, img_url)
+    SELECT
+        v.id,
+        image_urls[1 + floor(random() * array_length(image_urls, 1))::int]
+    FROM Vehicles v,
+        generate_series(1, 6),  -- 6 images per vehicle
+        (SELECT ARRAY[
+            -- Tesla/Electric cars
+            'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=800',
+            
+            -- Luxury/Sports cars
+            'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800',
+            'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=800',
+            
+            -- SUVs
+            'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=800',
+            'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800',
+            'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=800',
+            
+            -- Sedans
+            'https://images.unsplash.com/photo-1536700503339-1e4b06520771?w=800',
+            'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800',
+            'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800',
+            
+            -- Modern cars
+            'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=800',
+            'https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=800',
+            
+            -- Classic/Vintage
+            'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800',
+            'https://images.unsplash.com/photo-1494905998402-395d579af36f?w=800',
+            
+            -- Interior shots
+            'https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?w=800',
+            'https://images.unsplash.com/photo-1581540222194-0def2dda95b8?w=800',
+            
+            -- Action/Driving shots
+            'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=800',
+            'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800',
+            
+            -- More variety
+            'https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800',
+            'https://images.unsplash.com/photo-1614200187524-dc4b892acf16?w=800',
+            'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?w=800'
+        ] AS image_urls) urls;
 
 -- =========================================================
 -- SUMMARY
@@ -162,4 +208,6 @@ SELECT 'Customers', COUNT(*) FROM Customers
 UNION ALL
 SELECT 'Sales', COUNT(*) FROM Sales
 UNION ALL
-SELECT 'Test Drives', COUNT(*) FROM Test_Drive_Record;
+SELECT 'Test Drives', COUNT(*) FROM Test_Drive_Record
+UNION ALL
+SELECT 'Images', COUNT(*) FROM Images;
