@@ -45,7 +45,7 @@ Customer createCustomer(
     const std::string &ph_number,
     const std::string &email,
     const std::string &driving_licence,
-    const std::optional<sd::string> &address);
+    const std::optional<std::string> &address);
 
 /// @brief Updates fields of an existing customer (PATCH semantics).
 /// @param guard Reference to a ConnectionGuard for database access, customer_id The unique identifier of the customer, first_name Optional new first name, last_name Optional new last name, ph_number Optional new phone number, email Optional new email address, driving_licence Optional new driving license number, address Optional new address.
