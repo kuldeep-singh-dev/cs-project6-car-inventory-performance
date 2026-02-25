@@ -8,7 +8,7 @@ const DashboardPage = () => {
         <div className="dashQuote">
           <div className="dashQuoteMark">“</div>
           <p className="dashQuoteText">
-            Every vehicle in your inventory is an opportunity — manage them wisely, sell them confidently.
+            Every vehicle in your inventory is an opportunity - manage them wisely, sell them confidently.
           </p>
           <div className="dashQuoteBy"></div>
         </div>

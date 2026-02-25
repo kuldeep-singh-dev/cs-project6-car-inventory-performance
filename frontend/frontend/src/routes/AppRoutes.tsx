@@ -14,6 +14,11 @@ import EditTestDrivePage from '../pages/TestDrive/EditTestDrivePage';
 import TestDriveCustomerSelectPage from '../pages/TestDrive/TestDriveCustomerSelectPage'; 
 import TestDriveVehicleSelectPage from '../pages/TestDrive/TestDriveVehicleSelectPage';
 import AddSalePage from '../pages/Sales/AddSalesPage';
+import CustomersPage from '../pages/Customer/CustomersPage';
+import AddCustomerPage from '../pages/Customer/AddCustomerPage';
+import CustomerDetailsPage from '../pages/Customer/CustomerDetailsPage';
+import EditCustomerPage from '../pages/Customer/EditCustomerPage';
+
 const AppRoutes = () => {
   return (
     <BrowserRouter>
@@ -36,6 +41,10 @@ const AppRoutes = () => {
           <Route path="/testdrive/:id/edit" element={<EditTestDrivePage />} />
           <Route path="/testdrive/customer" element={<TestDriveCustomerSelectPage />} />
           <Route path="/testdrive/vehicle" element={<TestDriveVehicleSelectPage />} />
+          <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/customers/add" element={<AddCustomerPage />} />
+          <Route path="/customers/:id" element={<CustomerDetailsPage />} />
+          <Route path="/customers/:id/edit" element={<EditCustomerPage />} />
 
 
         </Route>
