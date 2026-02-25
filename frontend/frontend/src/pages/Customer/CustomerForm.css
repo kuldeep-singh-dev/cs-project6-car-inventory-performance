@@ -1,0 +1,139 @@
+/* CustomerForm.css */
+/* Styles for the CustomerForm component */
+.custPage {
+    padding: 24px 28px;
+    width: 100%;
+}
+
+.custCard {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid #e6e8ee;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+}
+
+.custHeaderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.custTitle {
+    font-size: 40px;
+    font-weight: 800;
+    margin: 0;
+    color: #0f172a;
+}
+
+.custActions {
+    display: flex;
+    gap: 10px;
+}
+
+.btnPrimary,
+.btnSecondary {
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btnPrimary {
+    background: #1d4ed8;
+    color: white;
+    border: 1px solid #1d4ed8;
+}
+
+.btnPrimary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btnSecondary {
+    background: white;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+}
+
+.custError {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #7f1d1d;
+    padding: 10px 12px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+.custForm {
+    width: 100%;
+}
+
+.custGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 16px;
+}
+
+.custSpan2 {
+    grid-column: 1 / span 2;
+}
+
+.custField {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.custLabel {
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.req {
+    color: #dc2626;
+    margin-left: 6px;
+    font-weight: 900;
+}
+
+.custInput {
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+}
+
+.custInput:focus {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+}
+
+.custHint {
+    font-size: 12px;
+    color: #475569;
+}
+
+.custHint.warn {
+    color: #b45309;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .custGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .custSpan2 {
+        grid-column: auto;
+    }
+
+    .custTitle {
+        font-size: 32px;
+    }
+}
