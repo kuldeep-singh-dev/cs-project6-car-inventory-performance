@@ -1,0 +1,177 @@
+/* CustomersPage.css */
+/* Styles for the CustomersPage component */
+
+/* Page wrapper */
+.custPage {
+    padding: 24px;
+}
+
+.custHeaderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.custTitle {
+    font-size: 40px;
+    margin: 0;
+}
+
+/* Add button */
+.custAddButton {
+    padding: 10px 18px;
+    font-size: 16px;
+    font-weight: 800;
+    border-radius: 10px;
+    border: 1px solid #111827;
+    background: #111827;
+    color: white;
+    cursor: pointer;
+}
+
+.custAddButton:hover {
+    opacity: 0.92;
+}
+
+/* Table wrapper */
+.custTableWrap {
+    margin-top: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: auto;
+    max-height: 70vh;
+    background: white;
+}
+
+/* Table */
+.custTable {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+/* Sticky header */
+.custTableHead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 800;
+    text-align: left;
+    padding: 12px 14px;
+    border-bottom: 1px solid #111827;
+}
+
+/* Body rows */
+.custTable td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.custRow {
+    cursor: pointer;
+}
+
+.custRow:hover {
+    background: #f8fafc;
+}
+
+
+/* Details page styling */
+.custDetailsPage {
+    padding: 24px;
+}
+
+.custDetailsHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.custDetailsTitle {
+    margin: 0;
+    font-size: 42px;
+    font-weight: 900;
+}
+
+.custDetailsActions {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.custBtnSecondary {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.custBtnPrimary {
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 1px solid #111827;
+    background: #111827;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.custBtnPrimary:hover {
+    opacity: 0.92;
+}
+
+.custDetailsCard {
+    margin-top: 18px;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 18px;
+    background: white;
+}
+
+/* Makes fields fill the card nicely */
+.custDetailsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 28px;
+}
+
+.custDetailsItem {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.custDetailsLabel {
+    font-weight: 800;
+    color: #334155;
+}
+
+.custDetailsValue {
+    font-size: 18px;
+    color: #0f172a;
+    word-break: break-word;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .custTable {
+        min-width: 700px;
+    }
+
+    .custDetailsGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .custDetailsTitle {
+        font-size: 34px;
+    }
+}
