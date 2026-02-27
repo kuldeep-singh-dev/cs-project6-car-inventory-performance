@@ -4,7 +4,12 @@
 #include <ctime>
 #include <sstream>
 #include <iomanip>
+/// @file sales.cpp
+/// @brief Implements sales-related HTTP endpoints and helper functions for the application.
 
+/// @brief Validates if a date string is in YYYY-MM-DD format and is a valid calendar date.
+/// @param date The date string to validate.
+/// @return true if the date is valid, false otherwise.
 bool isValidDate(const std::string& date) {
     std::tm tm = {};
     std::istringstream ss(date);
@@ -22,7 +27,9 @@ bool isValidDate(const std::string& date) {
            check.tm_mon  == tm.tm_mon &&
            check.tm_mday == tm.tm_mday;
 }
-
+/// @brief Converts a date string in YYYY-MM-DD format to std::time_t.
+/// @param date The date string to convert.
+/// @return The corresponding std::time_t value.
 std::time_t toTimeT(const std::string& date) {
     std::tm tm = {};
     std::istringstream ss(date);
@@ -30,25 +37,30 @@ std::time_t toTimeT(const std::string& date) {
     tm.tm_isdst = -1;
     return std::mktime(&tm);
 }
-
+/// @brief Converts a std::time_t value to a date string in YYYY-MM-DD format.
+/// @param t The std::time_t value to convert.
+/// @return The formatted date string.
 std::string toDateString(std::time_t t) {
     std::tm tm = *std::gmtime(&t);
     char buf[11];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d", &tm);
     return std::string(buf);
 }
-
+/// @brief Registers all sales-related HTTP routes to the Crow application.
+/// @param app The Crow application instance to register routes on.
 void registerSalesRoutes(crow::SimpleApp& app) {
 
     //------------------------------------------------------------------
     // GET /sales
     //------------------------------------------------------------------
+    /// @brief Retrieves a list of all sales.
+    /// @route GET /sales
     CROW_ROUTE(app, "/sales")
     .methods("GET"_method)
     ([]() {
 
-        auto conn = getDbConnection();
-        pqxx::work txn(*conn);
+        ConnectionGuard guard(getPool());
+        pqxx::work txn(guard.get());
 
         pqxx::result r = txn.exec(
             "SELECT s.id AS sale_id, s.date, s.sale_price, "
@@ -82,6 +94,10 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     //------------------------------------------------------------------
     // GET /sales/weekly-report
     //------------------------------------------------------------------
+
+    /// @brief Generates a weekly sales report in CSV format for a given date range.
+    /// @route GET /sales/weekly-report
+    /// @param req The Crow request containing 'start' and 'end' query parameters.
     CROW_ROUTE(app, "/sales/weekly-report")
     .methods(crow::HTTPMethod::GET)
     ([](const crow::request& req) {
@@ -119,8 +135,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             const int MAX_WEEKS = 520;
             int weekCounter = 0;
 
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             std::ostringstream csv;
             csv << "week_start,week_end,total_sales_count,total_revenue,"
@@ -197,12 +213,14 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     //------------------------------------------------------------------
     // GET /sales/export/csv - Export all sales to CSV
     //------------------------------------------------------------------
+     /// @brief Exports all sales data to a CSV file.
+    /// @route GET /sales/export/csv
     CROW_ROUTE(app, "/sales/export/csv")
     .methods("GET"_method)
     ([]() {
         try {
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result r = txn.exec(
                 "SELECT "
@@ -283,6 +301,9 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     //------------------------------------------------------------------
     // GET /sales/<id> - Get invoice for a sale
     //------------------------------------------------------------------
+     /// @brief Retrieves the invoice for a specific sale by ID.
+    /// @route GET /sales/id/<id>
+    /// @param id The sale ID (UUID).
     CROW_ROUTE(app, "/sales/id/<string>")
     .methods("GET"_method)
     ([](const std::string& id) {
@@ -294,8 +315,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
                 return crow::response(400, error);
             }
 
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result r = txn.exec_params(
                 "SELECT "
@@ -488,6 +509,9 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     //------------------------------------------------------------------
     // POST /sales
     //------------------------------------------------------------------
+    /// @brief Creates a new sale record.
+    /// @route POST /sales
+    /// @param req The Crow request containing sale data in JSON format.
     CROW_ROUTE(app, "/sales")
     .methods("POST"_method)
     ([](const crow::request& req) {
@@ -535,8 +559,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
                 return crow::response(400, error);
             }
 
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             // insert and return new sale
             pqxx::result r = txn.exec_params(
@@ -592,108 +616,83 @@ void registerSalesRoutes(crow::SimpleApp& app) {
     //------------------------------------------------------------------
     // GET /sales/vehicles/<id>
     //------------------------------------------------------------------
+    /// @brief Retrieves all sales for a specific vehicle.
+    /// @route GET /sales/vehicles/<vehicle_id>
+    /// @param vehicle_id The vehicle ID (UUID).
     CROW_ROUTE(app, "/sales/vehicles/<string>")
     .methods("GET"_method)
     ([](const std::string& vehicle_id) {
-
-        auto conn = getDbConnection();
-
-        // Prepared once per connection
-        static bool prepared = false;
-        if (!prepared) {
-            conn->prepare(
-                "get_sales_by_vehicle",
-                "SELECT s.id AS sale_id, s.date, s.sale_price, "
-                "v.id AS vehicle_id, v.make, v.model, "
-                "c.id AS customer_id, c.first_name, c.last_name "
-                "FROM Sales s "
-                "JOIN Vehicles v ON s.vehicle_id = v.id "
-                "JOIN Customers c ON s.customer_id = c.id "
-                "WHERE v.id = $1 "
-                "ORDER BY s.date DESC"
-            );
-            prepared = true;
-        }
-
-        pqxx::work txn(*conn);
-        pqxx::result r = txn.exec_prepared("get_sales_by_vehicle", vehicle_id);
-
-        // Explicit JSON array
+        ConnectionGuard guard(getPool());
+        pqxx::work txn(guard.get());
+        pqxx::result r = txn.exec_params(
+            "SELECT s.id AS sale_id, s.date, s.sale_price, "
+            "v.id AS vehicle_id, v.make, v.model, "
+            "c.id AS customer_id, c.first_name, c.last_name "
+            "FROM Sales s "
+            "JOIN Vehicles v ON s.vehicle_id = v.id "
+            "JOIN Customers c ON s.customer_id = c.id "
+            "WHERE v.id = $1 "
+            "ORDER BY s.date DESC",
+            vehicle_id
+        );
         crow::json::wvalue result = crow::json::wvalue::list();
         int i = 0;
-
         for (const auto& row : r) {
-            result[i]["sale_id"] = row["sale_id"].c_str();
-            result[i]["date"] = row["date"].c_str();
-            result[i]["price"] = row["sale_price"].as<double>();
-            result[i]["vehicle_id"] = row["vehicle_id"].c_str();
-            result[i]["vehicle"] =
-                std::string(row["make"].c_str()) + " " +
-                row["model"].c_str();
+            result[i]["sale_id"]     = row["sale_id"].c_str();
+            result[i]["date"]        = row["date"].c_str();
+            result[i]["price"]       = row["sale_price"].as<double>();
+            result[i]["vehicle_id"]  = row["vehicle_id"].c_str();
+            result[i]["vehicle"]     = std::string(row["make"].c_str()) + " " + row["model"].c_str();
             result[i]["customer_id"] = row["customer_id"].c_str();
-            result[i]["customer"] =
-                std::string(row["first_name"].c_str()) + " " +
-                row["last_name"].c_str();
+            result[i]["customer"]    = std::string(row["first_name"].c_str()) + " " + row["last_name"].c_str();
             ++i;
         }
-
         return result;
     });
 
     //------------------------------------------------------------------
     // GET /sales/customers/<id>
     //------------------------------------------------------------------
+    /// @brief Retrieves all sales for a specific customer.
+    /// @route GET /sales/customers/<customer_id>
+    /// @param customer_id The customer ID (UUID).
     CROW_ROUTE(app, "/sales/customers/<string>")
     .methods("GET"_method)
     ([](const std::string& customer_id) {
-
-        auto conn = getDbConnection();
-
-        // Prepared once per connection
-        static bool prepared = false;
-        if (!prepared) {
-            conn->prepare(
-                "get_sales_by_customer",
-                "SELECT s.id AS sale_id, s.date, s.sale_price, "
-                "v.id AS vehicle_id, v.make, v.model, "
-                "c.id AS customer_id, c.first_name, c.last_name "
-                "FROM Sales s "
-                "JOIN Vehicles v ON s.vehicle_id = v.id "
-                "JOIN Customers c ON s.customer_id = c.id "
-                "WHERE c.id = $1 "
-                "ORDER BY s.date DESC"
-            );
-            prepared = true;
-        }
-
-        pqxx::work txn(*conn);
-        pqxx::result r = txn.exec_prepared("get_sales_by_customer", customer_id);
-
-        // Explicit JSON array
+        ConnectionGuard guard(getPool());
+        pqxx::work txn(guard.get());
+        pqxx::result r = txn.exec_params(
+            "SELECT s.id AS sale_id, s.date, s.sale_price, "
+            "v.id AS vehicle_id, v.make, v.model, "
+            "c.id AS customer_id, c.first_name, c.last_name "
+            "FROM Sales s "
+            "JOIN Vehicles v ON s.vehicle_id = v.id "
+            "JOIN Customers c ON s.customer_id = c.id "
+            "WHERE c.id = $1 "
+            "ORDER BY s.date DESC",
+            customer_id
+        );
         crow::json::wvalue result = crow::json::wvalue::list();
         int i = 0;
-
         for (const auto& row : r) {
-            result[i]["sale_id"] = row["sale_id"].c_str();
-            result[i]["date"] = row["date"].c_str();
-            result[i]["price"] = row["sale_price"].as<double>();
-            result[i]["vehicle_id"] = row["vehicle_id"].c_str();
-            result[i]["vehicle"] =
-                std::string(row["make"].c_str()) + " " +
-                row["model"].c_str();
+            result[i]["sale_id"]     = row["sale_id"].c_str();
+            result[i]["date"]        = row["date"].c_str();
+            result[i]["price"]       = row["sale_price"].as<double>();
+            result[i]["vehicle_id"]  = row["vehicle_id"].c_str();
+            result[i]["vehicle"]     = std::string(row["make"].c_str()) + " " + row["model"].c_str();
             result[i]["customer_id"] = row["customer_id"].c_str();
-            result[i]["customer"] =
-                std::string(row["first_name"].c_str()) + " " +
-                row["last_name"].c_str();
+            result[i]["customer"]    = std::string(row["first_name"].c_str()) + " " + row["last_name"].c_str();
             ++i;
         }
-
         return result;
     });
 
     //------------------------------------------------------------------
     // PUT /sales/<id> - Update sale
     //------------------------------------------------------------------
+    /// @brief Updates a sale record by ID.
+    /// @route PUT /sales/<id>
+    /// @param req The Crow request containing updated sale data in JSON format, id The sale ID (UUID)
     CROW_ROUTE(app, "/sales/<string>")
     .methods("PUT"_method)
     ([](const crow::request& req, const std::string& id) {
@@ -755,8 +754,8 @@ void registerSalesRoutes(crow::SimpleApp& app) {
             // ----------------------------
             // Database update
             // ----------------------------
-            auto conn = getDbConnection();
-            pqxx::work txn(*conn);
+            ConnectionGuard guard(getPool());
+            pqxx::work txn(guard.get());
 
             pqxx::result r;
 

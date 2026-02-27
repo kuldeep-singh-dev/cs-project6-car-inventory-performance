@@ -23,18 +23,13 @@ public:
 
     static std::string createTestCustomer(pqxx::connection& conn) {
         pqxx::work txn(conn);
-        
-        // Generate unique identifiers
         std::string unique_suffix = std::to_string(std::time(nullptr)) + std::to_string(rand() % 10000);
         std::string unique_email = "test_" + unique_suffix + "@test.com";
         std::string unique_license = "TEST-" + unique_suffix;
-        
         pqxx::result r = txn.exec_params(
             "INSERT INTO Customers (first_name, last_name, ph_number, email, driving_licence) "
-            "VALUES ('Test', 'User', '4165551234', $1, $2) "
-            "RETURNING id",
-            unique_email, unique_license
-        );
+            "VALUES ('Test', 'User', '4165551234', $1, $2) RETURNING id",
+            unique_email, unique_license);
         txn.commit();
         return r[0]["id"].c_str();
     }
@@ -43,10 +38,8 @@ public:
         pqxx::work txn(conn);
         pqxx::result r = txn.exec_params(
             "INSERT INTO Sales (vehicle_id, customer_id, date, sale_price) "
-            "VALUES ($1, $2, CURRENT_DATE, $3) "
-            "RETURNING id",
-            vehicle_id, customer_id, sale_price
-        );
+            "VALUES ($1, $2, CURRENT_DATE, $3) RETURNING id",
+            vehicle_id, customer_id, sale_price);
         txn.commit();
         return r[0]["id"].c_str();
     }
@@ -70,62 +63,52 @@ public:
     }
 };
 
+
 // ========================================
 // TEST FIXTURE
 // ========================================
 
 class SalesTest : public ::testing::Test {
-protected:
-    std::shared_ptr<pqxx::connection> conn;
-    std::string test_vehicle_id;
-    std::string test_customer_id;
-    std::string test_sale_id;
+    protected:
+        std::unique_ptr<ConnectionGuard> guard_;  
+        std::string test_vehicle_id;
+        std::string test_customer_id;
+        std::string test_sale_id;
 
-    void SetUp() override {
-        // Get database connection
-        conn = getDbConnection();
-        ASSERT_NE(conn, nullptr);
-        ASSERT_TRUE(conn->is_open());
-        
-        // Create test data
-        test_vehicle_id = SalesTestHelper::createTestVehicle(*conn);
-        test_customer_id = SalesTestHelper::createTestCustomer(*conn);
-    }
+        // Convenience accessor so all the test bodies below stay unchanged
+        pqxx::connection& conn() { return guard_->get(); }
 
-    void TearDown() override {
-        // Cleanup in reverse order (sales -> vehicles -> customers)
-        try {
-            if (!test_sale_id.empty()) {
-                SalesTestHelper::deleteTestSale(*conn, test_sale_id);
-            }
-            if (!test_vehicle_id.empty()) {
-                SalesTestHelper::deleteTestVehicle(*conn, test_vehicle_id);
-            }
-            if (!test_customer_id.empty()) {
-                SalesTestHelper::deleteTestCustomer(*conn, test_customer_id);
-            }
-        } catch (...) {
-            // Ignore cleanup errors
+        void SetUp() override {
+            guard_ = std::make_unique<ConnectionGuard>(getPool());
+            ASSERT_TRUE(guard_->get().is_open());
+            test_vehicle_id  = SalesTestHelper::createTestVehicle(conn());
+            test_customer_id = SalesTestHelper::createTestCustomer(conn());
         }
-    }
-};
+
+        void TearDown() override {
+            try {
+                if (!test_sale_id.empty())    SalesTestHelper::deleteTestSale(conn(),     test_sale_id);
+                if (!test_vehicle_id.empty()) SalesTestHelper::deleteTestVehicle(conn(),  test_vehicle_id);
+                if (!test_customer_id.empty())SalesTestHelper::deleteTestCustomer(conn(), test_customer_id);
+            } catch (...) {}
+            guard_.reset(); // return connection to pool
+        }
+    };
+
 
 // ========================================
 // DATABASE CONNECTION TESTS
 // ========================================
 
 TEST(DatabaseTest, CanConnectToDatabase) {
-    auto conn = getDbConnection();
-    ASSERT_NE(conn, nullptr);
-    EXPECT_TRUE(conn->is_open());
+    ConnectionGuard guard(getPool());
+    EXPECT_TRUE(guard.get().is_open());
 }
 
 TEST(DatabaseTest, CanExecuteSimpleQuery) {
-    auto conn = getDbConnection();
-    pqxx::work txn(*conn);
-    
+    ConnectionGuard guard(getPool());
+    pqxx::work txn(guard.get());
     pqxx::result r = txn.exec("SELECT 1 AS test_value");
-    
     ASSERT_EQ(r.size(), 1);
     EXPECT_EQ(r[0]["test_value"].as<int>(), 1);
 }
@@ -135,7 +118,7 @@ TEST(DatabaseTest, CanExecuteSimpleQuery) {
 // ========================================
 
 TEST_F(SalesTest, CreateSale_Success) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "INSERT INTO Sales (vehicle_id, customer_id, date, sale_price) "
@@ -157,7 +140,7 @@ TEST_F(SalesTest, CreateSale_Success) {
 }
 
 TEST_F(SalesTest, CreateSale_InvalidVehicleId) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     EXPECT_THROW({
         txn.exec_params(
@@ -169,7 +152,7 @@ TEST_F(SalesTest, CreateSale_InvalidVehicleId) {
 }
 
 TEST_F(SalesTest, CreateSale_InvalidCustomerId) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     EXPECT_THROW({
         txn.exec_params(
@@ -181,7 +164,7 @@ TEST_F(SalesTest, CreateSale_InvalidCustomerId) {
 }
 
 TEST_F(SalesTest, CreateSale_ZeroPrice) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "INSERT INTO Sales (vehicle_id, customer_id, date, sale_price) "
@@ -203,9 +186,9 @@ TEST_F(SalesTest, CreateSale_ZeroPrice) {
 
 TEST_F(SalesTest, GetAllSales_ReturnsResults) {
     // Create a test sale first
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec(
         "SELECT s.id AS sale_id, s.date, s.sale_price, "
@@ -238,9 +221,9 @@ TEST_F(SalesTest, GetAllSales_ReturnsResults) {
 // ========================================
 
 TEST_F(SalesTest, GetSaleById_ValidId) {
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id, 28500.00);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id, 28500.00);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT "
@@ -267,7 +250,7 @@ TEST_F(SalesTest, GetSaleById_ValidId) {
 }
 
 TEST_F(SalesTest, GetSaleById_InvalidId) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT * FROM Sales WHERE id = $1",
@@ -282,9 +265,9 @@ TEST_F(SalesTest, GetSaleById_InvalidId) {
 // ========================================
 
 TEST_F(SalesTest, UpdateSale_Price) {
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "UPDATE Sales SET sale_price = $1 WHERE id = $2 "
@@ -299,9 +282,9 @@ TEST_F(SalesTest, UpdateSale_Price) {
 }
 
 TEST_F(SalesTest, UpdateSale_Date) {
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "UPDATE Sales SET date = $1 WHERE id = $2 "
@@ -316,9 +299,9 @@ TEST_F(SalesTest, UpdateSale_Date) {
 }
 
 TEST_F(SalesTest, UpdateSale_BothPriceAndDate) {
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "UPDATE Sales SET sale_price = $1, date = $2 WHERE id = $3 "
@@ -334,7 +317,7 @@ TEST_F(SalesTest, UpdateSale_BothPriceAndDate) {
 }
 
 TEST_F(SalesTest, UpdateSale_NonExistentId) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "UPDATE Sales SET sale_price = $1 WHERE id = $2 "
@@ -350,9 +333,9 @@ TEST_F(SalesTest, UpdateSale_NonExistentId) {
 // ========================================
 
 TEST_F(SalesTest, GetSalesByVehicle_HasSales) {
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT s.id AS sale_id, s.date, s.sale_price "
@@ -366,7 +349,7 @@ TEST_F(SalesTest, GetSalesByVehicle_HasSales) {
 }
 
 TEST_F(SalesTest, GetSalesByVehicle_NoSales) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT s.id AS sale_id FROM Sales s WHERE s.vehicle_id = $1",
@@ -381,9 +364,9 @@ TEST_F(SalesTest, GetSalesByVehicle_NoSales) {
 // ========================================
 
 TEST_F(SalesTest, GetSalesByCustomer_HasSales) {
-    test_sale_id = SalesTestHelper::createTestSale(*conn, test_vehicle_id, test_customer_id);
+    test_sale_id = SalesTestHelper::createTestSale(conn(), test_vehicle_id, test_customer_id);
     
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT s.id AS sale_id, s.sale_price "
@@ -397,7 +380,7 @@ TEST_F(SalesTest, GetSalesByCustomer_HasSales) {
 }
 
 TEST_F(SalesTest, GetSalesByCustomer_NoSales) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "SELECT s.id AS sale_id FROM Sales s WHERE s.customer_id = $1",
@@ -451,7 +434,7 @@ TEST(InvoiceCalculationsTest, ProfitCalculation) {
 // ========================================
 
 TEST_F(SalesTest, EdgeCase_VeryLargePrice) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "INSERT INTO Sales (vehicle_id, customer_id, date, sale_price) "
@@ -468,7 +451,7 @@ TEST_F(SalesTest, EdgeCase_VeryLargePrice) {
 }
 
 TEST_F(SalesTest, EdgeCase_FutureDate) {
-    pqxx::work txn(*conn);
+    pqxx::work txn(conn());
     
     pqxx::result r = txn.exec_params(
         "INSERT INTO Sales (vehicle_id, customer_id, date, sale_price) "

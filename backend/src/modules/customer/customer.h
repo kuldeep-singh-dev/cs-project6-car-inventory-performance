@@ -1,4 +1,5 @@
 #include "../../external/crow/crow_all.h"
+#include "../../db/db_connection.h"
 #include <pqxx/pqxx>
 #include <optional>
 #include <string>

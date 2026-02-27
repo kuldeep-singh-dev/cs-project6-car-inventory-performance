@@ -1,5 +1,4 @@
 #include "customer.h"
-
 #include "../../db/db_connection.h"
 
 #include <algorithm>

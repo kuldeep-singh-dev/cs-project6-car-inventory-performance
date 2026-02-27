@@ -3,82 +3,59 @@
 
 void registerTestDriveRoutes(crow::SimpleApp& app) {
 
-	//define routes
-	//home route get rid off this 
-	CROW_ROUTE(app, "/testdrive").methods(crow::HTTPMethod::GET)
-		([](crow::response& res) {
-		//create databae connection
-		auto conn = getDbConnection();
+    CROW_ROUTE(app, "/testdrive").methods(crow::HTTPMethod::GET)
+        ([](crow::response& res) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.listTestDrives(res);
+        });
 
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.listTestDrives(res);
-			});
-	//testdrive by id 
-	CROW_ROUTE(app, "/testdrive/<string>").methods(crow::HTTPMethod::GET)
-		([](const crow::request& req,crow::response& res, string testDriveId) {
-		//create databae connection
-		auto conn = getDbConnection();
+    CROW_ROUTE(app, "/testdrive/<string>").methods(crow::HTTPMethod::GET)
+        ([](const crow::request& req, crow::response& res, string testDriveId) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.getTestDriveById(res, testDriveId);
+        });
 
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.getTestDriveById(res, testDriveId);
-			
-			});
+    CROW_ROUTE(app, "/testdrive/post").methods(crow::HTTPMethod::POST)
+        ([](const crow::request& req, crow::response& res) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.createTestDrive(req, res);
+        });
 
-	//create test drive OR schedule test drive
-	CROW_ROUTE(app, "/testdrive/post").methods(crow::HTTPMethod::POST)
-		([](const crow::request& req, crow::response& res) {
-		//create databae connection
-		auto conn = getDbConnection();
+    CROW_ROUTE(app, "/testdrive/<string>").methods(crow::HTTPMethod::PATCH)
+        ([](const crow::request& req, crow::response& res, string testDriveId) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.updateTestDrive(req, res, testDriveId);
+        });
 
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.createTestDrive(req, res);
-			});
-	//update test drive 
-	CROW_ROUTE(app, "/testdrive/<string>").methods(crow::HTTPMethod::PATCH)
-		([](const crow::request& req, crow::response& res, string testDriveId) {
-		//create databae connection
-		auto conn = getDbConnection();
+    CROW_ROUTE(app, "/testdrive/customer/<string>").methods(crow::HTTPMethod::GET)
+        ([](const crow::request& req, crow::response& res, string customerId) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.getTestDriveByCustomerId(res, customerId);
+        });
 
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.updateTestDrive(req, res,testDriveId);
-			});
-	//get test drive by customer id 
-	CROW_ROUTE(app, "/testdrive/customer/<string>").methods(crow::HTTPMethod::GET)
-		([](const crow::request& req, crow::response& res, string customerId) {
-		//create databae connection
-		auto conn = getDbConnection();
+    CROW_ROUTE(app, "/testdrive/vehicle/<string>").methods(crow::HTTPMethod::GET)
+        ([](const crow::request& req, crow::response& res, string vehicleId) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.getTestDriveByVehicleId(res, vehicleId);
+        });
 
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.getTestDriveByCustomerId(res, customerId);
-			});
-	CROW_ROUTE(app, "/testdrive/vehicle/<string>").methods(crow::HTTPMethod::GET)
-		([](const crow::request& req, crow::response& res, string vehicleId) {
-		//create databae connection
-		auto conn = getDbConnection();
-
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.getTestDriveByVehicleId(res, vehicleId);
-			});
-	CROW_ROUTE(app, "/testdrive/export/csv").methods(crow::HTTPMethod::GET)
-		([](crow::response& res) {
-		//create databae connection
-		auto conn = getDbConnection();
-
-		//create service and controller instances
-		TestDriveService testDriveService(conn);
-		TestDriveController testDriveController(testDriveService);
-		testDriveController.getExportCsV(res);
-			});
+    CROW_ROUTE(app, "/testdrive/export/csv").methods(crow::HTTPMethod::GET)
+        ([](crow::response& res) {
+            ConnectionGuard guard(getPool());
+            TestDriveService testDriveService(guard);
+            TestDriveController testDriveController(testDriveService);
+            testDriveController.getExportCsV(res);
+        });
 }
